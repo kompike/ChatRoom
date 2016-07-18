@@ -1,4 +1,4 @@
-var UserService = function(eventBus, userStorage) {
+var UserService = function(eventBus, storageService) {
 	
 	var eventType = {
 		registrationFailed : 'REGISTRATION_FAILED', 
@@ -7,8 +7,15 @@ var UserService = function(eventBus, userStorage) {
 		userRegistered : 'USER_REGISTERED'
 	}
 	
-	var _addUser = function(user) {		
-		if (_checkIfUserExists(user)) {			
+	var _userCollection = 'users';
+	
+	var _addUser = function(user) {
+		
+		var userList = _getUsers();
+		if (typeof userList === 'undefined') {
+			storageService.createCollection(_userCollection);			
+		}		
+		if (_checkIfUserExists(user)) {
 			eventBus.post(eventType.registrationFailed, "User already exists");			
 		} else {			
 			var nickname = user.nickname;
@@ -20,10 +27,11 @@ var UserService = function(eventBus, userStorage) {
 			} else {
 				if (password !== repeatPassword) {
 					eventBus.post(eventType.registrationFailed, "Passwords must be equal");
-				} else {				
-					userStorage.addUser(user);				
+				} else {
+					var userDTO = new UserDTO(nickname, password);
+					storageService.addItem(_userCollection, userDTO);					
 					var userList = _getUsers();				
-					eventBus.post(eventType.userRegistered, user);
+					eventBus.post(eventType.userRegistered, userDTO);
 					eventBus.post(eventType.userListUpdated, userList);
 				}				
 			}
@@ -36,18 +44,16 @@ var UserService = function(eventBus, userStorage) {
 	}
 	
 	var _checkIfUserExists = function(user) {
-		var nickname = user.nickname;
-		var list = _getUsers();
-		return list.indexOf(nickname) > -1;
+		return storageService.findItemByName(_userCollection, user.nickname) !== null;
 	}
 	
 	var _getUserByNickname = function(nickname) {
-		var user = userStorage.getUserByNickname(nickname);
+		var user = storageService.findItemByName(_userCollection, nickname);
 		return user;
 	}
 	
 	var _getUsers = function() {
-		var users = userStorage.getAllUsers()
+		var users = storageService.findAll(_userCollection);
 		return users;
 	}
 	

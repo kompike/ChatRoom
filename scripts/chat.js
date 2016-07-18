@@ -11,18 +11,21 @@ var Chat = function(chatDivId, eventBus, userService) {
 		
 		var registrationDivId = chatDivId + '_registration';
 		var usersDivId = chatDivId + '_users';
+		var chatRoomDivId = chatDivId + '_chats';
 		
-		var $chatDiv = $('<div/>').appendTo('body').attr('id', chatDivId)
+		$('<div/>').appendTo('body').attr('id', chatDivId)
 			.append($('<div/>').attr('id', registrationDivId))
 			.append($('<div/>').attr('id', usersDivId));
 					
 		var registrationComponent = new RegistrationFormComponent(registrationDivId);		
-		var userListComponent = new UserListComponent(usersDivId);
+		var userListComponent = new UserListComponent(usersDivId);		
+		var chatRoomComponent = new ChatRoomComponent(chatRoomDivId);
 		
 		eventBus.subscribe(eventType.registrationFailed, registrationComponent.onRegistrationFailed);
 		eventBus.subscribe(eventType.newUserAdded, userService.onUserAdded);
-		eventBus.subscribe(eventType.userListUpdated, userListComponent.onUserRegistered);
-		eventBus.subscribe(eventType.userRegistered, registrationComponent.onUserRegistered);
+		//eventBus.subscribe(eventType.userListUpdated, userListComponent.onUserRegistered);
+		//eventBus.subscribe(eventType.userRegistered, registrationComponent.onUserRegistered);
+		eventBus.subscribe(eventType.userRegistered, chatRoomComponent.initialize);
 				
 		registrationComponent.initialize();
 		userListComponent.initialize();		
@@ -46,16 +49,14 @@ var Chat = function(chatDivId, eventBus, userService) {
 				.append($('<label/>').attr('for', 'repeat_password').text('Repeat password'))
 				.append($('<input/>').attr({'id': 'repeat_password', 'name' : 'repeat_password', 'type':'password'})).append('<br/>')
 				.append($('<div/>').attr('id', errorDivId)).append('<br/>')
-				.append($('<button/>').attr('id', buttonId).text('Register')))
-									
-			$('#' + buttonId).click(function() {														
-				var user = {
-					"nickname" : $('#nickname').val(),
-					"password" : $('#password').val(),
-					"repeatPassword" : $('#repeat_password').val()
-				};				
-				eventBus.post(eventType.newUserAdded, user);					
-			});
+				.append($('<button/>').attr('id', buttonId).text('Register').click(function() {														
+					var user = {
+						"nickname" : $('#nickname').val(),
+						"password" : $('#password').val(),
+						"repeatPassword" : $('#repeat_password').val()
+					};				
+					eventBus.post(eventType.newUserAdded, user);					
+				})))
 	
 		};
 		
@@ -100,7 +101,7 @@ var Chat = function(chatDivId, eventBus, userService) {
 			$('#' + _rootDivId + '_box_list').html('').append($('<ul/>'));
 			
 			for (var i = 0; i < userList.length; i++) {
-				$('<li/>').appendTo('ul').text(userList[i]);
+				$('<li/>').appendTo('ul').text(userList[i].getName());
 			}
 		}
 		
@@ -110,8 +111,24 @@ var Chat = function(chatDivId, eventBus, userService) {
 		};	
 	}
 	
+	var ChatRoomComponent = function(_rootDivId) {
+		
+		var _initialize = function() {
+			$('#' + chatDivId + '_registration').hide();
+			$('#' + chatDivId + '_users').hide();
+			$('#' + chatDivId).append($('<div/>').attr('id', _rootDivId));
+			
+			$('#' + _rootDivId).append($('<button/>').attr({'id': _rootDivId + '_add_chat', 'class' : 'add_chat'}).text('Add new chat'))
+				.append($('<button/>').attr({'id': _rootDivId + '_all_chats', 'class' : 'all_chats'}).text('View all chats'));
+			
+		}
+		
+		return {'initialize' : _initialize};
+	}
+	
 	return {"initChat" : _initChat};
 }
+
 
 define(function() {
 	return Chat;

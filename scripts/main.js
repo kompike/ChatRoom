@@ -4,15 +4,21 @@ define(function(require) {
 	
 	var EventBus = require('./eventbus');
 	
+	var UserDTO = require('./dto/userDTO');
+	
+	var ChatDTO = require('./dto/chatDTO');
+	
 	var UserService = require('./userservice');
 	
-	var UserStorage = require('./userstorage');
+	var ChatService = require('./chatservice');
 	
-	var userStorage = new UserStorage();	
+	var StorageService = require('./storageservice');
+	
+	var storageService = new StorageService();	
 	
 	var eventBus = new EventBus();
 
-	var chat = new Chat("chat_1", eventBus, new UserService(eventBus, userStorage));
+	var chat = new Chat("chat_1", eventBus, new UserService(eventBus, storageService));
 	
 	chat.initChat();
 });	
