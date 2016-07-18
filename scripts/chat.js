@@ -1,25 +1,28 @@
 var Chat = function(chatDivId, eventBus, userService) {
 	
+	var eventType = {
+		registrationFailed : 'REGISTRATION_FAILED', 
+		newUserAdded : 'NEW_USER_ADDED',
+		userListUpdated : 'USER_LIST_UPDATED',
+		userRegistered : 'USER_REGISTERED'
+	}
+	
 	var _initChat = function() {
 		
-		var chatDiv = document.createElement("div");
-		chatDiv.setAttribute("id", chatDivId);
-		var registrationComponentDiv = document.createElement("div");
-		registrationComponentDiv.setAttribute("id", chatDivId + '_registration');
-		var userListComponentDiv = document.createElement("div");	
-		userListComponentDiv.setAttribute("id", chatDivId + '_users');
+		var registrationDivId = chatDivId + '_registration';
+		var usersDivId = chatDivId + '_users';
 		
-		chatDiv.appendChild(registrationComponentDiv);
-		chatDiv.appendChild(userListComponentDiv);
-		document.body.appendChild(chatDiv);
+		var $chatDiv = $('<div/>').appendTo('body').attr('id', chatDivId)
+			.append($('<div/>').attr('id', registrationDivId))
+			.append($('<div/>').attr('id', usersDivId));
 					
-		var registrationComponent = new RegistrationFormComponent(chatDivId + '_registration');		
-		var userListComponent = new UserListComponent(chatDivId + '_users');
+		var registrationComponent = new RegistrationFormComponent(registrationDivId);		
+		var userListComponent = new UserListComponent(usersDivId);
 		
-		eventBus.subscribe('Registration_failed', registrationComponent.onRegistrationFailed);
-		eventBus.subscribe("New_user_added", userService.onUserAdded);
-		eventBus.subscribe("User_list_updated", userListComponent.onUserRegistered);
-		eventBus.subscribe("User_created", registrationComponent.onUserRegistered);
+		eventBus.subscribe(eventType.registrationFailed, registrationComponent.onRegistrationFailed);
+		eventBus.subscribe(eventType.newUserAdded, userService.onUserAdded);
+		eventBus.subscribe(eventType.userListUpdated, userListComponent.onUserRegistered);
+		eventBus.subscribe(eventType.userRegistered, registrationComponent.onUserRegistered);
 				
 		registrationComponent.initialize();
 		userListComponent.initialize();		
@@ -31,35 +34,28 @@ var Chat = function(chatDivId, eventBus, userService) {
 	
 		var _initialize = function() {
 			
-			var rootElement = document.getElementById(_rootDivId);			
 			var registrationFormBoxId = _rootDivId + "_box";			
 			var buttonId = registrationFormBoxId + "_btn";			
 			var errorDivId = registrationFormBoxId + "_err";
 				
-			rootElement.innerHTML = '<div id="' + registrationFormBoxId + '">' +
-				'<label for="nickname">Nickname</label>' +
-				'<input id="nickname" name="nickname" type="text" /><br/>' +
-				'<label for="password">Password</label>' +
-				'<input id="password" name="password" type="password" /><br/>' +
-				'<label for="repeat_password">Repeat password</label>' +
-				'<input id="repeat_password" name="repeat_password" type="password" /><br/>' +
-				'<div id="' + errorDivId + '"></div><br/>' +
-				'<button id="' + buttonId + '">Register</button></div>';
-						
-			var button = document.getElementById(buttonId);
-			
-			button.onclick = function() {				
-				var nickname = document.getElementById("nickname");
-				var password = document.getElementById("password");
-				var repeatedPassword = document.getElementById("repeat_password");			
-														
+			$('#' + _rootDivId).html($('<div/>').attr('id', _rootDivId + '_box')
+				.append($('<label/>').attr('for', 'nickname').text('Nickname'))
+				.append($('<input/>').attr({'id': 'nickname', 'name' : 'nickname', 'type':'text'})).append('<br/>')
+				.append($('<label/>').attr('for', 'password').text('Password'))
+				.append($('<input/>').attr({'id': 'password', 'name' : 'password', 'type':'password'})).append('<br/>')
+				.append($('<label/>').attr('for', 'repeat_password').text('Repeat password'))
+				.append($('<input/>').attr({'id': 'repeat_password', 'name' : 'repeat_password', 'type':'password'})).append('<br/>')
+				.append($('<div/>').attr('id', errorDivId)).append('<br/>')
+				.append($('<button/>').attr('id', buttonId).text('Register')))
+									
+			$('#' + buttonId).click(function() {														
 				var user = {
-					"nickname" : nickname.value,
-					"password" : password.value,
-					"repeatPassword" : repeatedPassword.value
+					"nickname" : $('#nickname').val(),
+					"password" : $('#password').val(),
+					"repeatPassword" : $('#repeat_password').val()
 				};				
-				eventBus.post("New_user_added", user);				
-			}
+				eventBus.post(eventType.newUserAdded, user);					
+			});
 	
 		};
 		
@@ -71,16 +67,15 @@ var Chat = function(chatDivId, eventBus, userService) {
 			_clearFields();
 		}
 		
-		var _registrationFailed = function(message) {			
-			var errorElement = document.getElementById(_rootDivId + '_box_err');			
-			errorElement.innerHTML = '<span style="color:red; font-size:small">' + message + '</span>';
+		var _registrationFailed = function(message) {		
+			$('#' + _rootDivId + '_box_err').html($('<span/>').text(message));
 		};
 		
 		var _clearFields = function() {			
-			document.getElementById("nickname").value = "";
-			document.getElementById("password").value = "";
-			document.getElementById("repeat_password").value = "";	
-			document.getElementById(_rootDivId + "_box_err").innerHTML = "";	
+			$('#nickname').val('');
+			$('#password').val('');
+			$('#repeat_password').val('');
+			$('#' + _rootDivId + '_box_err').html('');	
 		};
 		
 		return {
@@ -92,31 +87,21 @@ var Chat = function(chatDivId, eventBus, userService) {
 
 	var UserListComponent = function(_rootDivId) {
 		
-		var _initialize = function() {			
-			var rootElement = document.getElementById(_rootDivId);			
-			var userListBoxId = _rootDivId + "_box";			
-			rootElement.innerHTML = '<div id="' + userListBoxId + '">Available users</div>';
-			var listDiv = document.createElement("div");
-			listDiv.setAttribute("id", userListBoxId + "_list");
-			rootElement.appendChild(listDiv);
+		var _initialize = function() {		
+			$('#' + _rootDivId).append($('<div/>').html('<h5>Available users</h5>').attr('id', _rootDivId + '_box'))
+				.append($('<div/>').attr('id', _rootDivId+ '_box_list'));
 		};
 		
 		var _onUserRegistered = function(userList) {
 			_initUserList(userList);
 		}
 		
-		var _initUserList = function(userList) {			
-			var rootElement = document.getElementById(_rootDivId + "_box_list");
-			rootElement.innerHTML = "";			
-			var ul = document.createElement("ul");
+		var _initUserList = function(userList) {
+			$('#' + _rootDivId + '_box_list').html('').append($('<ul/>'));
 			
 			for (var i = 0; i < userList.length; i++) {
-				var li = document.createElement("li");
-				li.appendChild(document.createTextNode(userList[i]));
-				ul.appendChild(li);
+				$('<li/>').appendTo('ul').text(userList[i]);
 			}
-			
-			rootElement.appendChild(ul);
 		}
 		
 		return {

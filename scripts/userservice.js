@@ -1,21 +1,33 @@
 var UserService = function(eventBus, userStorage) {
 	
+	var eventType = {
+		registrationFailed : 'REGISTRATION_FAILED', 
+		newUserAdded : 'NEW_USER_ADDED',
+		userListUpdated : 'USER_LIST_UPDATED',
+		userRegistered : 'USER_REGISTERED'
+	}
+	
 	var _addUser = function(user) {		
 		if (_checkIfUserExists(user)) {			
-			eventBus.post('Registration_failed', "User already exists");			
+			eventBus.post(eventType.registrationFailed, "User already exists");			
 		} else {			
 			var nickname = user.nickname;
 			var password = user.password;
 			var repeatPassword = user.repeatPassword;
 			
-			if (password !== repeatPassword) {
-				eventBus.post('Registration_failed', "Passwords must be equal");
-			} else {				
-				userStorage.addUser(user);				
-				var userList = _getUsers();				
-				eventBus.post('User_created', userList);
-				eventBus.post('User_list_updated', userList);
+			if (nickname === "" || password === "" || repeatPassword === "") {
+				eventBus.post(eventType.registrationFailed, "All fields must be filled");				
+			} else {
+				if (password !== repeatPassword) {
+					eventBus.post(eventType.registrationFailed, "Passwords must be equal");
+				} else {				
+					userStorage.addUser(user);				
+					var userList = _getUsers();				
+					eventBus.post(eventType.userRegistered, user);
+					eventBus.post(eventType.userListUpdated, userList);
+				}				
 			}
+			
 		}		
 	}
 		
@@ -40,7 +52,6 @@ var UserService = function(eventBus, userStorage) {
 	}
 	
 	return {
-		'addUser' : _addUser, 
 		'onUserAdded' : _onUserAdded, 
 		'getUsers' : _getUsers,
 		'getUserByNickname' : _getUserByNickname

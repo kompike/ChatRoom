@@ -23,7 +23,7 @@ describe('Testing user registration', function(){
 			"repeatPassword":"password"
 		};
 		
-		userService.addUser(firstUser);
+		userService.onUserAdded(firstUser);
 
 		var userList = userService.getUsers();
 		
@@ -57,7 +57,7 @@ describe('Testing user registration', function(){
 			"repeatPassword":"password"
 		};
 		
-		userService.addUser(existingUser);
+		userService.onUserAdded(existingUser);
 		
 		test
 			.array(userList)
@@ -82,7 +82,7 @@ describe('Testing user registration', function(){
 			"repeatPassword":"password1"
 		};
 				
-		userService.addUser(secondUser);
+		userService.onUserAdded(secondUser);
 		
 		test
 			.array(userList)
@@ -90,5 +90,30 @@ describe('Testing user registration', function(){
 				.hasLength(1)
 				.hasProperty(0, "User")
 				.hasNotProperty(1, "User1");
+	});
+
+	it('All fields must be filled', function(){
+
+		var userList = userService.getUsers();
+		
+		test
+			.array(userList)
+				.isNotEmpty()
+				.hasLength(1);
+		
+		var emptyUser = {
+			"nickname":"EmptyUser", 
+			"password":"password", 
+			"repeatPassword":""
+		};
+				
+		userService.onUserAdded(emptyUser);
+		
+		test
+			.array(userList)
+				.isNotEmpty()
+				.hasLength(1)
+				.hasProperty(0, "User")
+				.hasNotProperty(1, "EmptyUser");
 	});
 });
