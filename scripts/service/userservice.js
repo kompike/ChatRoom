@@ -1,12 +1,5 @@
 var UserService = function(eventBus, storageService) {
 	
-	var eventType = {
-		registrationFailed : 'REGISTRATION_FAILED', 
-		newUserAdded : 'NEW_USER_ADDED',
-		userListUpdated : 'USER_LIST_UPDATED',
-		userRegistered : 'USER_REGISTERED'
-	}
-	
 	var _userCollection = 'users';
 	
 	var _addUser = function(user) {
@@ -16,27 +9,26 @@ var UserService = function(eventBus, storageService) {
 			storageService.createCollection(_userCollection);			
 		}		
 		if (_checkIfUserExists(user)) {
-			eventBus.post(eventType.registrationFailed, "User already exists");			
+			eventBus.post(EventType.registrationFailed, "User already exists");			
 		} else {			
-			var nickname = user.nickname;
-			var password = user.password;
-			var repeatPassword = user.repeatPassword;
+			var nickname = user.nickname.trim();
+			var password = user.password.trim();
+			var repeatPassword = user.repeatPassword.trim();
 			
 			if (nickname === "" || password === "" || repeatPassword === "") {
-				eventBus.post(eventType.registrationFailed, "All fields must be filled");				
+				eventBus.post(EventType.registrationFailed, "All fields must be filled");				
 			} else {
 				if (password !== repeatPassword) {
-					eventBus.post(eventType.registrationFailed, "Passwords must be equal");
+					eventBus.post(EventType.registrationFailed, "Passwords must be equal");
 				} else {
 					var userDTO = new UserDTO(nickname, password);
 					storageService.addItem(_userCollection, userDTO);					
 					var userList = _getUsers();				
-					eventBus.post(eventType.userRegistered, userDTO);
-					eventBus.post(eventType.userListUpdated, userList);
+					eventBus.post(EventType.userRegistered, userDTO);
 				}				
 			}
 			
-		}		
+		}	
 	}
 		
 	var _onUserAdded = function(user) {
@@ -53,12 +45,36 @@ var UserService = function(eventBus, storageService) {
 	}
 	
 	var _getUsers = function() {
-		var users = storageService.findAll(_userCollection);
+		var users = storageService.findAll( );
 		return users;
+	}
+	
+	var _loginUser = function(user) {
+			
+		if (!_checkIfUserExists(user)) {
+			eventBus.post(EventType.loginFailed, "User not registered!");			
+		} else {			
+			var name = user.nickname;
+			var pass = user.password;
+			
+			var userFromStorage = _getUserByNickname(name);
+			var userPassword = userFromStorage.getPassword();
+			
+			if (pass !== userPassword) {
+				eventBus.post(EventType.loginFailed, "Incorrect password");
+			} else {			
+				eventBus.post(EventType.userLoggedIn, userFromStorage);
+			}
+		}		
+	}	
+		
+	var _onUserLogin = function(user) {
+		_loginUser(user);
 	}
 	
 	return {
 		'onUserAdded' : _onUserAdded, 
+		'onUserLogin' : _onUserLogin, 
 		'getUsers' : _getUsers,
 		'getUserByNickname' : _getUserByNickname
 	};	

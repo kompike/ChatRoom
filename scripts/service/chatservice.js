@@ -1,25 +1,22 @@
 var ChatService = function(eventBus, storageService) {
-	
-	var eventType = {
-		chatAlreadyExists : 'CHAT_ALREADY_EXISTS',
-		newChatCreated : 'NEW_CHAT_CREATED'
-	}
-	
+		
 	var _chatCollection = 'chats';
 	
 	var _addChat = function(chat) {
 		
-		var chatList = _getUsers();
+		var chatList = _getAllChats();
 		if (typeof chatList === 'undefined') {
 			storageService.createCollection(_chatCollection);			
 		}		
 		if (_checkIfChatExists(chat)) {
-			eventBus.post(eventType.chatAlreadyExists, "Chat already exists");			
+			eventBus.post(EventType.chatCreationFailed, "Chat already exists");			
+		} else if (chat.name.trim() === '') {
+			eventBus.post(EventType.chatCreationFailed, "Chat name must be filled");
 		} else {
-			var chatDTO = new chatDTO(chat.name, new Array());
-			storageService.addItem(_chatCollection, chatDTO);					
-			var chatList = _getUsers();
-			eventBus.post(eventType.newChatCreated, chatList);
+			var chatDTO = new ChatDTO(chat.name, chat.owner, new Array(), new Array());
+			storageService.addItem(_chatCollection, chatDTO);				
+			var chatList = _getAllChats();
+			eventBus.post(EventType.newChatCreated, chatList);
 		}		
 	}
 		
@@ -37,8 +34,12 @@ var ChatService = function(eventBus, storageService) {
 	}
 	
 	var _getAllChats = function() {
-		var chats = storageService.findAll(_chatCollection);
-		return chats;
+		console.log('Looking for all available chats...');
+		if (typeof storageService.findAll(_chatCollection) === 'undefined') {
+			storageService.createCollection(_chatCollection);
+		}			
+		var chatList = storageService.findAll(_chatCollection);
+		return chatList;
 	}
 	
 	return {
