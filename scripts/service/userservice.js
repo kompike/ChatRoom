@@ -1,5 +1,10 @@
+if (typeof define !== 'function') {
+    var UserDTO = require('../dto/userDTO');
+	var EventType = require('../events');
+}
+
 var UserService = function(eventBus, storageService) {
-	
+		
 	var _userCollection = 'users';
 	
 	var _addUser = function(user) {
@@ -22,8 +27,7 @@ var UserService = function(eventBus, storageService) {
 					eventBus.post(EventType.registrationFailed, "Passwords must be equal");
 				} else {
 					var userDTO = new UserDTO(nickname, password);
-					storageService.addItem(_userCollection, userDTO);					
-					var userList = _getUsers();				
+					storageService.addItem(_userCollection, userDTO);		
 					eventBus.post(EventType.userRegistered, userDTO);
 				}				
 			}
@@ -45,7 +49,7 @@ var UserService = function(eventBus, storageService) {
 	}
 	
 	var _getUsers = function() {
-		var users = storageService.findAll( );
+		var users = storageService.findAll(_userCollection);
 		return users;
 	}
 	
@@ -78,6 +82,10 @@ var UserService = function(eventBus, storageService) {
 		'getUsers' : _getUsers,
 		'getUserByNickname' : _getUserByNickname
 	};	
+}
+
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module);
 }
 
 define(function() {

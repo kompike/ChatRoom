@@ -61,7 +61,7 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 						"nickname" : $('#' + _rootDivId + '_nickname').val(),
 						"password" : $('#' + _rootDivId + '_password').val(),
 						"repeatPassword" : $('#' + _rootDivId + '_repeat_password').val()
-					};				
+					};		
 					eventBus.post(EventType.newUserAdded, user);			
 				})))
 	
@@ -271,6 +271,9 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 	return {"initChat" : _initChat};
 }
 
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module);
+}
 
 define(function() {
 	return Chat;

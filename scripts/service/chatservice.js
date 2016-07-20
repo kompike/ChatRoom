@@ -1,3 +1,9 @@
+if (typeof define !== 'function') {
+    var ChatDTO = require('../dto/chatDTO');
+    var MessageDTO = require('../dto/messageDTO');
+	var EventType = require('../events');
+}
+
 var ChatService = function(eventBus, storageService) {
 		
 	var _chatCollection = 'chats';
@@ -86,6 +92,10 @@ var ChatService = function(eventBus, storageService) {
 		'getAllChats' : _getAllChats,
 		'getChatByName' : _getChatByName		
 	};	
+}
+
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module);
 }
 
 define(function() {
