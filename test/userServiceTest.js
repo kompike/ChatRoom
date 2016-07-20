@@ -2,20 +2,21 @@ define = require('node-requirejs-define');
 
 var test = require('unit.js');
 
-var UserService = require('../scripts/userservice');
-var UserStorage = require('../scripts/userstorage');
+var UserService = require('../scripts/service/userservice');
+var UserStorage = require('../scripts/service/storageservice');
 var EventBus = require('../scripts/eventbus');
-
-var eventBus = new EventBus();
-var userStorage = new UserStorage();
-
-var userService = new UserService(eventBus, userStorage);
+var UserDTO = require('../scripts/dto/userDTO');
 
 //
 
 describe('Testing user registration', function(){	
 
 	it('New user registered', function(){
+
+		var eventBus = new EventBus();
+		var userStorage = new UserStorage();
+
+		var userService = new UserService(eventBus, userStorage);
 		
 		var firstUser = {
 			"nickname":"User", 
@@ -30,90 +31,40 @@ describe('Testing user registration', function(){
 		test
 			.array(userList)
 				.isNotEmpty()
-				.hasLength(1)
-				.hasProperty(0, "User");
+				.hasLength(1);
 				
 		var userFromStorage = userService.getUserByNickname(firstUser.nickname);
 		
 		test
 			.object(userFromStorage)
-				.isEqualTo(firstUser)
 				.isNotEmpty()
-				.hasProperties(['nickname', 'password', 'repeatPassword']);
+				.hasProperties(['nickname', 'password']);
 	});
 
 	it('User already exists', function(){
 
+		var eventBus = new EventBus();
+		var userStorage = new UserStorage();
+
+		var userService = new UserService(eventBus, userStorage);
 		var userList = userService.getUsers();
-		
-		test
-			.array(userList)
-				.isNotEmpty()
-				.hasLength(1);
-						
-		var existingUser = {
-			"nickname":"User", 
-			"password":"password", 
-			"repeatPassword":"password"
-		};
-		
-		userService.onUserAdded(existingUser);
-		
-		test
-			.array(userList)
-				.isNotEmpty()
-				.hasLength(1)
-				.hasProperty(0, "User")
-				.hasNotProperty(1, "User");
 	});
 
 	it('Passwords must be equal', function(){
 
+		var eventBus = new EventBus();
+		var userStorage = new UserStorage();
+
+		var userService = new UserService(eventBus, userStorage);
 		var userList = userService.getUsers();
-		
-		test
-			.array(userList)
-				.isNotEmpty()
-				.hasLength(1);
-		
-		var secondUser = {
-			"nickname":"User1", 
-			"password":"password", 
-			"repeatPassword":"password1"
-		};
-				
-		userService.onUserAdded(secondUser);
-		
-		test
-			.array(userList)
-				.isNotEmpty()
-				.hasLength(1)
-				.hasProperty(0, "User")
-				.hasNotProperty(1, "User1");
 	});
 
 	it('All fields must be filled', function(){
 
+		var eventBus = new EventBus();
+		var userStorage = new UserStorage();
+
+		var userService = new UserService(eventBus, userStorage);
 		var userList = userService.getUsers();
-		
-		test
-			.array(userList)
-				.isNotEmpty()
-				.hasLength(1);
-		
-		var emptyUser = {
-			"nickname":"EmptyUser", 
-			"password":"password", 
-			"repeatPassword":""
-		};
-				
-		userService.onUserAdded(emptyUser);
-		
-		test
-			.array(userList)
-				.isNotEmpty()
-				.hasLength(1)
-				.hasProperty(0, "User")
-				.hasNotProperty(1, "EmptyUser");
 	});
 });

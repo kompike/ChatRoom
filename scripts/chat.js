@@ -8,8 +8,7 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 		var chatRoomDivId = chatDivId + '_chats';
 		var loginDivId = chatDivId + '_login';
 		
-		$('<div/>').appendTo('body').attr('id', chatDivId)
-			.append($('<div/>').attr('id', registrationDivId));
+		$('<div/>').appendTo('body').attr('id', chatDivId);
 					
 		var registrationComponent = new RegistrationFormComponent(registrationDivId);		
 		var chatRoomComponent = new ChatRoomComponent(chatRoomDivId);		
@@ -24,8 +23,14 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 		eventBus.subscribe(EventType.login, userService.onUserLogin);
 		eventBus.subscribe(EventType.chatCreation, chatService.onChatAdded);
 		eventBus.subscribe(EventType.chatCreationFailed, chatRoomComponent.onChatCreationFailed);
-		eventBus.subscribe(EventType.newChatCreated, chatRoomComponent.onChatCreated);
+		eventBus.subscribe(EventType.chatListUpdated, chatRoomComponent.onChatCreated);
 		eventBus.subscribe(EventType.joinChat, chatRoomComponent.onChatJoined);
+		eventBus.subscribe(EventType.onUserJoined, chatService.onUserJoined);
+		eventBus.subscribe(EventType.onMessageAdded, chatService.onMessageAdded);
+		eventBus.subscribe(EventType.onChatCreated, chatService.onMessageListCreated);		
+		eventBus.subscribe(EventType.messageAddingFailed, chatRoomComponent.onMessageAddingFailed);			
+		eventBus.subscribe(EventType.messageListCreated, chatRoomComponent.onMessageListCreated);
+		eventBus.subscribe(EventType.messageAdded, chatRoomComponent.onMessageAdded);
 				
 		registrationComponent.initialize();		
 	};
@@ -35,6 +40,8 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 	var RegistrationFormComponent = function(_rootDivId) {
 	
 		var _initialize = function() {
+			
+			$('#' + chatDivId).append($('<div/>').attr('id', chatDivId + '_registration'))
 			
 			var registrationFormBoxId = _rootDivId + "_box";			
 			var buttonId = registrationFormBoxId + "_btn";			
@@ -124,6 +131,7 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 	var ChatRoomComponent = function(_rootDivId) {
 		
 		var _initialize = function() {
+			
 			$('#' + chatDivId + '_login').remove();
 			$('#' + chatDivId).append($('<div/>').attr('id', _rootDivId));
 			$('#' + _rootDivId).append($('<div/>').attr('id', _rootDivId + '_header'));
@@ -143,7 +151,8 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 				.append($('<div/>').attr('id', _rootDivId + '_drop'));
 		}
 		
-		var _initChatList = function(chatList) {			
+		var _initChatList = function(chatList) {
+			
 			$('#' + _rootDivId + '_drop').html('').append($('<select/>').attr('id', _rootDivId + '_chat_list'));
 			
 			$('#' + _rootDivId + '_chat_list').change(function() {
@@ -158,16 +167,21 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 				.append($('<button/>').attr({'id': _rootDivId + '_join_chat', 'class' : 'join_chat'}).text('Join chat').click(function(){
 					var name = $('#' + _rootDivId + '_chat_list').val();
 					$(this).prop('disabled', true).text('Joined');
+					console.log('Join chat pressed');
 					eventBus.post(EventType.joinChat, name);
-				}))
+			}))
 			
 			_checkChatJoin();
 		}
 		
 		var _joinChat = function(chatName) {
 			
-			var chat = chatService.getChatByName(chatName);
-			chat.addUser(currentUser);
+			var chatData = {
+				'chatName':chatName, 
+				'user':currentUser
+			};
+			
+			eventBus.post(EventType.onUserJoined, chatData);
 			
 			$('<div/>').appendTo('body').attr({'id': chatName, 'class' : 'chat_box'})
 				.append($('<div/>').attr('class', 'chat_header').text('Chat ' + chatName)
@@ -176,20 +190,21 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 						_checkChatJoin();
 					})))
 				.append($('<div/>').attr({'id': chatName + '_body', 'class':'chat_body'}))
+				.append($('<div/>').attr('id', chatName + '_message_err'))
 				.append($('<input/>').attr({'id': chatName + '_input', 'class': 'message_text', 'type' : 'text', 'placeholder' : 'Type here!'}))
 				.append($('<button/>').attr({'id': chatName + '_send', 'class' : 'send_message'}).text('Send').click(function(){
 					var message = $('#' + chatName + '_input').val();
-					$('<p>' + currentUser + ' : ' + message + '</p>').appendTo('#' + chatName + '_body');
-					$('#' + chatName + '_input').val('');
-					var message = new MessageDTO(currentUser, message);
-					chat.addMessage(message);
-				}));
-				
-				var messageList = chat.getMessages();
-				
-				for (var i = 0; i < messageList.length; i++) {
-					$('<p>' + messageList[i].getAuthor() + ' : ' + messageList[i].getMessage() + '</p>').appendTo('#' + chatName + '_body');					
-				}
+					
+					var messageData = {
+						'chatName' : chatName,
+						'user' : currentUser,
+						'message' : message
+					};
+					
+					eventBus.post(EventType.onMessageAdded, messageData);
+			}));
+			
+			eventBus.post(EventType.onChatCreated, chatName);
 		}
 		
 		var _onChatCreated = function(chatList) {
@@ -220,11 +235,36 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 			}
 		}
 		
+		var _onMessageListCreated = function(messageData) {
+			var messageList = messageData.messageList;
+			var chatName = messageData.chatName;
+			$('#' + chatName + '_body').html('');
+			for (var i = 0; i < messageList.length; i++) {
+				$('<p>' + messageList[i].getAuthor() + ' : ' + messageList[i].getMessage() + '</p>').appendTo('#' + chatName + '_body');					
+			}
+		}
+	
+		var _onMessageAdded = function(messageData) {
+			var messageText = messageData.message.getMessage();
+			var author = messageData.message.getAuthor();
+			var chatName = messageData.chatName;
+			$('<p>' + author + ' : ' + messageText + '</p>').appendTo('#' + chatName + '_body');
+			$('#' + chatName + '_input').val('');
+			$('#' + chatName + '_message_err').html('');
+		}
+		
+		var _onMessageAddingFailed = function(errorData) {
+			$('#' + errorData.chatName + '_message_err').html($('<span/>').text(errorData.errorMessage));
+		}
+		
 		return {
 			'initialize' : _initialize, 
 			'onChatCreationFailed' : _onChatCreationFailed, 
 			'onChatCreated' : _onChatCreated, 
-			'onChatJoined' : _onChatJoined
+			'onChatJoined' : _onChatJoined,
+			'onMessageListCreated' : _onMessageListCreated,
+			'onMessageAdded' : _onMessageAdded,
+			'onMessageAddingFailed' : _onMessageAddingFailed
 		};
 	}
 	

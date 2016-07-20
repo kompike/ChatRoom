@@ -8,8 +8,14 @@ var EventType = {
 	login : 'LOGIN',
 	chatCreation: 'CHAT_CREATION',
 	chatCreationFailed : 'CHAT_CREATION_FAILED',
-	newChatCreated : 'NEW_CHAT_CREATED',
-	joinChat : 'JOIN_CHAT'
+	chatListUpdated : 'CHAT_LIST_UPDATED',
+	joinChat : 'JOIN_CHAT',
+	onUserJoined: 'ON_USER_JOINED',
+	onMessageAdded: 'ON_MESSAGE_ADDED',
+	messageAddingFailed: 'MESSAGE_ADDING_FAILED',
+	onChatCreated: 'CHAT_CREATED',
+	messageListCreated: 'MESSAGE_LIST_CREATED',
+	messageAdded: 'MESSAGE_ADDED'
 }
 
 define(function() {

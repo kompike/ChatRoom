@@ -16,12 +16,48 @@ var ChatService = function(eventBus, storageService) {
 			var chatDTO = new ChatDTO(chat.name, chat.owner, new Array(), new Array());
 			storageService.addItem(_chatCollection, chatDTO);				
 			var chatList = _getAllChats();
-			eventBus.post(EventType.newChatCreated, chatList);
+			eventBus.post(EventType.chatListUpdated, chatList);
 		}		
 	}
 		
 	var _onChatAdded = function(chat) {
 		_addChat(chat);
+	}
+		
+	var _onUserJoined = function(chatData) {
+		var chat = _getChatByName(chatData.chatName);
+		chat.addUser(chatData.user);		
+	}
+		
+	var _onMessageListCreated = function(chatName) {
+		var chat = _getChatByName(chatName);
+		var messageList = chat.getMessages();
+		var messageData = {
+			'messageList' : messageList,
+			'chatName' : chatName
+		};
+		eventBus.post(EventType.messageListCreated, messageData);
+	}
+		
+	var _onMessageAdded = function(messageData) {	
+		var message = messageData.message;
+		if (message.trim() === '') {
+			var errorData = {
+				'errorMessage': 'You can not post empty message',
+				'chatName' : messageData.chatName
+			};
+			eventBus.post(EventType.messageAddingFailed, errorData);
+		} else {
+			var chat = _getChatByName(messageData.chatName);
+			var author = messageData.user;
+			var messageDTO = new MessageDTO(author, message);
+			chat.addMessage(messageDTO);
+			var messageInfo = {
+				'message' : messageDTO,
+				'chatName' : messageData.chatName
+			};
+			eventBus.post(EventType.messageAdded, messageInfo);
+		}
 	}
 	
 	var _checkIfChatExists = function(chat) {
@@ -43,7 +79,10 @@ var ChatService = function(eventBus, storageService) {
 	}
 	
 	return {
-		'onChatAdded' : _onChatAdded, 
+		'onChatAdded' : _onChatAdded,
+		'onMessageAdded' : _onMessageAdded,
+		'onMessageListCreated' : _onMessageListCreated,
+		'onUserJoined' : _onUserJoined, 
 		'getAllChats' : _getAllChats,
 		'getChatByName' : _getChatByName		
 	};	
