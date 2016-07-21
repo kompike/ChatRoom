@@ -199,10 +199,9 @@ li:hover {
 
 .message_text {
 	display:inline-block;
-	width: 70% !important;
+	width: 50% !important;
 	margin: 5px !important;
 	height: 50px !important;
-	background: #fafafa !important;
 	border-radius: 5px;
 	border:1px solid #A9A9A9 !important;
 	color: #666 !important;
@@ -218,7 +217,7 @@ li:hover {
 	text-align: center;
 	font-style: normal;
 	border-radius: 5px;
-	width: 25%;
+	width: 20%;
 	border: 1px solid #3ac162;
 	border-width: 1px 1px 3px;
 	box-shadow: 0 -1px 0 rgba(255,255,255,0.1) inset;
