@@ -12,13 +12,13 @@ var UserService = function(eventBus, storageService) {
 		
 		var newUserId = null;
 		var userList = _getUsers();
+		var nickname = user.nickname.trim();
 		if (typeof userList === 'undefined') {
 			storageService.createCollection(_userCollection);			
 		}		
-		if (_checkIfUserExists(user)) {
+		if (_checkIfUserExists(nickname)) {
 			eventBus.post(events.REGISTRATION_FAILED, errorMessages.USER_ALREADY_EXISTS);			
 		} else {			
-			var nickname = user.nickname.trim();
 			var password = user.password;
 			var repeatPassword = user.repeatPassword;
 			
@@ -42,8 +42,8 @@ var UserService = function(eventBus, storageService) {
 		return _addUser(user);
 	}
 	
-	var _checkIfUserExists = function(user) {
-		return storageService.findItemByName(_userCollection, user.nickname) !== null;
+	var _checkIfUserExists = function(nickname) {
+		return storageService.findItemByName(_userCollection, nickname) !== null;
 	}
 	
 	var _getUserByNickname = function(nickname) {
@@ -57,11 +57,11 @@ var UserService = function(eventBus, storageService) {
 	}
 	
 	var _loginUser = function(user) {
-			
-		if (!_checkIfUserExists(user)) {
+		
+		var name = user.nickname;
+		if (!_checkIfUserExists(name)) {
 			eventBus.post(events.LOGIN_FAILED, errorMessages.INCORRECT_CREDENTIALS);			
 		} else {			
-			var name = user.nickname;
 			var pass = user.password;
 			
 			var userFromStorage = _getUserByNickname(name);
