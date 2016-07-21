@@ -10,7 +10,10 @@ var StorageService = function() {
 	
 	var _addItem = function(collectionName, item) {
 		
-		_collectionStorage[collectionName].push(item);
+		item.setId(collectionName + '_' + _collectionStorage[collectionName].length);
+		_collectionStorage[collectionName].push(item);	
+		
+		return item.getId();
 	}
 	
 	var _findAll = function(collectionName) {
@@ -41,17 +44,11 @@ var StorageService = function() {
 		for (var i = 0; i < itemList.length; i++) {
 			if (itemList[i].getId() === itemId) {
 				itemById = itemList[i];
-				return;
+				return itemById;
 			}
 		}
 		
 		return itemById;
-	}
-	
-	var _deleteItem = function(collectionName, item) {		
-		var itemList = _collectionStorage[collectionName];
-		var index = itemList.indexOf(item);
-		itemList.splice(index, 1);
 	}
 	
 	return {
@@ -59,8 +56,7 @@ var StorageService = function() {
 		'addItem' : _addItem,
 		'findAll' : _findAll,
 		'findItemById' : _findItemById,
-		'findItemByName' : _findItemByName,
-		'deleteItem' : _deleteItem
+		'findItemByName' : _findItemByName
 	};
 	
 }

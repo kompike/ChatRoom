@@ -12,21 +12,8 @@ var EventBus = function(){
 			
 		} else {
 			
-			for (var i = 0; i < eventTypeSubscribers.length; i++) {
-				
-				var callback = function(callbackIndex) {
-					
-					setTimeout(function() {
-					
-						var currentCallback = eventTypeSubscribers[callbackIndex];
-						
-						currentCallback(someEvent);
-						
-					}, 0);
-					
-				}
-				
-				callback(i);				
+			for (var i = 0; i < eventTypeSubscribers.length; i++) {				
+				eventTypeSubscribers[i](someEvent);										
 			}
 		}	
 	};

@@ -1,5 +1,12 @@
 var ChatDTO = function(name, owner, users, messages) {
+		
+	var _getId = function() {
+		return this.id;
+	}
 	
+	var _setId = function(chatId) {
+		this.id = chatId;
+	}	
 	var _getName = function() {
 		return name;
 	}
@@ -25,6 +32,8 @@ var ChatDTO = function(name, owner, users, messages) {
 	}
 	
 	return {
+		'getId': _getId,
+		'setId': _setId,
 		'getUsers': _getUsers,
 		'getMessages': _getMessages,
 		'addUser': _addUser,
@@ -32,7 +41,7 @@ var ChatDTO = function(name, owner, users, messages) {
 		'addMessage': _addMessage,
 		'getOwner': _getOwner
 	};
-}
+};
 
 if (typeof define !== 'function') {
     var define = require('amdefine')(module);

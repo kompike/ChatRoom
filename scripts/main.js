@@ -4,7 +4,9 @@ define(function(require) {
 	
 	var EventBus = require('./eventbus');
 	
-	var EventType = require('./events');
+	var events = require('./events');
+	
+	var errorMessages = require('./errormessages');
 	
 	var UserDTO = require('./dto/userDTO');
 	
@@ -22,7 +24,7 @@ define(function(require) {
 	
 	var eventBus = new EventBus();
 
-	var chat = new Chat("chat_1", eventBus, new UserService(eventBus, storageService), new ChatService(eventBus, storageService));
+	var chat = new Chat("chatroom", eventBus, new UserService(eventBus, storageService), new ChatService(eventBus, storageService));
 	
 	chat.initChat();
 });	

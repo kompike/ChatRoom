@@ -1,42 +1,45 @@
 if (typeof define !== 'function') {
     var UserDTO = require('../dto/userDTO');
-	var EventType = require('../events');
+	var events = require('../events');
+	var errorMessages = require('../errormessages');
 }
 
 var UserService = function(eventBus, storageService) {
 		
-	var _userCollection = 'users';
+	var _userCollection = 'user';
 	
 	var _addUser = function(user) {
 		
+		var newUserId = null;
 		var userList = _getUsers();
 		if (typeof userList === 'undefined') {
 			storageService.createCollection(_userCollection);			
 		}		
 		if (_checkIfUserExists(user)) {
-			eventBus.post(EventType.registrationFailed, "User already exists");			
+			eventBus.post(events.REGISTRATION_FAILED, errorMessages.USER_ALREADY_EXISTS);			
 		} else {			
 			var nickname = user.nickname.trim();
-			var password = user.password.trim();
-			var repeatPassword = user.repeatPassword.trim();
+			var password = user.password;
+			var repeatPassword = user.repeatPassword;
 			
 			if (nickname === "" || password === "" || repeatPassword === "") {
-				eventBus.post(EventType.registrationFailed, "All fields must be filled");				
+				eventBus.post(events.REGISTRATION_FAILED, errorMessages.EMPTY_FIELDS_NOT_ALLOWED);				
 			} else {
 				if (password !== repeatPassword) {
-					eventBus.post(EventType.registrationFailed, "Passwords must be equal");
+					eventBus.post(events.REGISTRATION_FAILED, errorMessages.PASSWORDS_NOT_EQUAL);
 				} else {
 					var userDTO = new UserDTO(nickname, password);
-					storageService.addItem(_userCollection, userDTO);		
-					eventBus.post(EventType.userRegistered, userDTO);
+					newUserId = storageService.addItem(_userCollection, userDTO);			
+					eventBus.post(events.USER_REGISTERED, userDTO);
 				}				
-			}
-			
-		}	
+			}			
+		}
+		
+		return newUserId;
 	}
 		
 	var _onUserAdded = function(user) {
-		_addUser(user);
+		return _addUser(user);
 	}
 	
 	var _checkIfUserExists = function(user) {
@@ -56,7 +59,7 @@ var UserService = function(eventBus, storageService) {
 	var _loginUser = function(user) {
 			
 		if (!_checkIfUserExists(user)) {
-			eventBus.post(EventType.loginFailed, "User not registered!");			
+			eventBus.post(events.LOGIN_FAILED, errorMessages.INCORRECT_CREDENTIALS);			
 		} else {			
 			var name = user.nickname;
 			var pass = user.password;
@@ -65,9 +68,9 @@ var UserService = function(eventBus, storageService) {
 			var userPassword = userFromStorage.getPassword();
 			
 			if (pass !== userPassword) {
-				eventBus.post(EventType.loginFailed, "Incorrect password");
+				eventBus.post(events.LOGIN_FAILED, errorMessages.INCORRECT_CREDENTIALS);
 			} else {			
-				eventBus.post(EventType.userLoggedIn, userFromStorage);
+				eventBus.post(events.LOGIN_SUCCESSFULL, userFromStorage);
 			}
 		}		
 	}	

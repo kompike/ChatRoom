@@ -1,21 +1,23 @@
-var EventType = {
+var events = {
 	
-	registrationFailed : 'REGISTRATION_FAILED', 
-	newUserAdded : 'NEW_USER_ADDED',
-	userRegistered : 'USER_REGISTERED',
-	userLoggedIn : 'USER_LOGGED_IN',
-	loginFailed : 'LOGIN_FAILED',
-	login : 'LOGIN',
-	chatCreation: 'CHAT_CREATION',
-	chatCreationFailed : 'CHAT_CREATION_FAILED',
-	chatListUpdated : 'CHAT_LIST_UPDATED',
-	joinChat : 'JOIN_CHAT',
-	onUserJoined: 'ON_USER_JOINED',
-	onMessageAdded: 'ON_MESSAGE_ADDED',
-	messageAddingFailed: 'MESSAGE_ADDING_FAILED',
-	onChatCreated: 'CHAT_CREATED',
-	messageListCreated: 'MESSAGE_LIST_CREATED',
-	messageAdded: 'MESSAGE_ADDED'
+	NEW_USER_ADDING : 'NEW_USER_ADDING',
+	REGISTRATION_FAILED : 'REGISTRATION_FAILED', 
+	USER_REGISTERED : 'USER_SUCCESSFULLY_REGISTERED',
+	LOGIN_ATTEMPT : 'LOGIN',
+	LOGIN_FAILED : 'LOGIN_FAILED',
+	LOGIN_SUCCESSFULL : 'USER_LOGGED_IN',
+	NEW_CHAT_CREATING: 'NEW_CHAT_CREATING',
+	CHAT_CREATION_FAILED : 'CHAT_CREATION_FAILED',
+	CHAT_CREATED: 'CHAT_CREATED',
+	JOINING_CHAT : 'JOIN_CHAT',
+	USER_JOINING_FAILED : 'USER_JOINING_FAILED',
+	USER_JOINED: 'ON_USER_JOINED',
+	ADDING_NEW_MESSAGE: 'ON_MESSAGE_ADDED',
+	MESSAGE_ADDING_FAILED: 'MESSAGE_ADDING_FAILED',
+	MESSAGE_ADDED: 'MESSAGE_ADDED',
+	LEAVING_CHAT: 'LEAVING_CHAT',
+	USER_LEAVING_FAILED : 'USER_LEAVING_FAILED',
+	CHAT_LEAVED: 'CHAT_LEAVED'
 }
 
 if (typeof define !== 'function') {
@@ -23,5 +25,5 @@ if (typeof define !== 'function') {
 }
 
 define(function() {
-	return EventType;
+	return events;
 });

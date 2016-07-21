@@ -1,5 +1,13 @@
 var UserDTO = function(nickname, password) {
 	
+	var _getId = function() {
+		return this.id;
+	}
+	
+	var _setId = function(userId) {
+		this.id = userId;
+	}	
+	
 	var _getName = function() {
 		return nickname;
 	}
@@ -9,6 +17,8 @@ var UserDTO = function(nickname, password) {
 	}
 	
 	return {
+		'getId': _getId,
+		'setId': _setId,
 		'getName': _getName,
 		'getPassword': _getPassword
 	};

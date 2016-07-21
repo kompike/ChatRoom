@@ -1,68 +1,76 @@
 if (typeof define !== 'function') {
     var ChatDTO = require('../dto/chatDTO');
     var MessageDTO = require('../dto/messageDTO');
-	var EventType = require('../events');
+	var events = require('../events');
+	var errorMessages = require('../errormessages');
 }
 
 var ChatService = function(eventBus, storageService) {
-		
-	var _chatCollection = 'chats';
+			
+	var _chatCollection = 'chat';
 	
 	var _addChat = function(chat) {
 		
+		var newChatId = null;
 		var chatList = _getAllChats();
+		var chatName = chat.name.trim();
 		if (typeof chatList === 'undefined') {
 			storageService.createCollection(_chatCollection);			
-		}		
+		}
 		if (_checkIfChatExists(chat)) {
-			eventBus.post(EventType.chatCreationFailed, "Chat already exists");			
-		} else if (chat.name.trim() === '') {
-			eventBus.post(EventType.chatCreationFailed, "Chat name must be filled");
+			eventBus.post(events.CHAT_CREATION_FAILED, errorMessages.CHAT_ALREADY_EXISTS);			
+		} else if (chatName === '') {
+			eventBus.post(events.CHAT_CREATION_FAILED, errorMessages.CHATNAME_MUST_BE_FILLED);
 		} else {
-			var chatDTO = new ChatDTO(chat.name, chat.owner, new Array(), new Array());
-			storageService.addItem(_chatCollection, chatDTO);				
+			var chatDTO = new ChatDTO(chatName, chat.owner, new Array(), new Array());
+			newChatId = storageService.addItem(_chatCollection, chatDTO);
 			var chatList = _getAllChats();
-			eventBus.post(EventType.chatListUpdated, chatList);
-		}		
+			eventBus.post(events.CHAT_CREATED, chatList);
+		}
+		
+		return newChatId;
 	}
 		
 	var _onChatAdded = function(chat) {
-		_addChat(chat);
+		return _addChat(chat);
 	}
 		
 	var _onUserJoined = function(chatData) {
 		var chat = _getChatByName(chatData.chatName);
-		chat.addUser(chatData.user);		
+		var userList = chat.getUsers();
+		var user = chatData.user;
+		if (userList.indexOf(user) > -1) {
+			eventBus.post(events.USER_JOINING_FAILED, errorMessages.USER_ALREADY_JOINED);
+		} else {
+			chat.addUser(user);
+			eventBus.post(events.USER_JOINED, {'id':chat.getId(), 'chatName':chat.getName(), 'messages' : chat.getMessages()});					
+		}
 	}
 		
-	var _onMessageListCreated = function(chatName) {
-		var chat = _getChatByName(chatName);
-		var messageList = chat.getMessages();
-		var messageData = {
-			'messageList' : messageList,
-			'chatName' : chatName
-		};
-		eventBus.post(EventType.messageListCreated, messageData);
+	var _onUserLeaved = function(chatData) {
+		var chat = _getChatById(chatData.chatId);
+		var user = chatData.user;
+		var index = chat.getUsers().indexOf(user);
+		if (index < 0) {
+			eventBus.post(events.USER_LEAVING_FAILED, errorMessages.USER_ALREADY_LEAVED);
+		} else {
+			chat.getUsers().splice(index, 1);
+			eventBus.post(events.CHAT_LEAVED, chat.getId());					
+		}
 	}
 		
 	var _onMessageAdded = function(messageData) {	
-		var message = messageData.message;
-		if (message.trim() === '') {
-			var errorData = {
-				'errorMessage': 'You can not post empty message',
-				'chatName' : messageData.chatName
+		var message = messageData.message.trim();
+		if (message === '') {
+			var errorMessage = {
+				'message' : errorMessages.EMPTY_MESSAGE_NOT_ALLOWED,
+				'chatId' : messageData.chatId
 			};
-			eventBus.post(EventType.messageAddingFailed, errorData);
+			eventBus.post(events.MESSAGE_ADDING_FAILED, errorMessage);
 		} else {
-			var chat = _getChatByName(messageData.chatName);
-			var author = messageData.user;
-			var messageDTO = new MessageDTO(author, message);
-			chat.addMessage(messageDTO);
-			var messageInfo = {
-				'message' : messageDTO,
-				'chatName' : messageData.chatName
-			};
-			eventBus.post(EventType.messageAdded, messageInfo);
+			var chat = _getChatById(messageData.chatId);
+			chat.addMessage(new MessageDTO(messageData.user, message));
+			eventBus.post(events.MESSAGE_ADDED, {'id' : messageData.chatId, 'messages': chat.getMessages()});
 		}
 	}
 	
@@ -75,8 +83,12 @@ var ChatService = function(eventBus, storageService) {
 		return chat;
 	}
 	
+	var _getChatById = function(chatId) {
+		var chat = storageService.findItemById(_chatCollection, chatId);
+		return chat;
+	}
+	
 	var _getAllChats = function() {
-		console.log('Looking for all available chats...');
 		if (typeof storageService.findAll(_chatCollection) === 'undefined') {
 			storageService.createCollection(_chatCollection);
 		}			
@@ -87,8 +99,8 @@ var ChatService = function(eventBus, storageService) {
 	return {
 		'onChatAdded' : _onChatAdded,
 		'onMessageAdded' : _onMessageAdded,
-		'onMessageListCreated' : _onMessageListCreated,
 		'onUserJoined' : _onUserJoined, 
+		'onUserLeaved' : _onUserLeaved, 
 		'getAllChats' : _getAllChats,
 		'getChatByName' : _getChatByName		
 	};	
