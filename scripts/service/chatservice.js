@@ -17,7 +17,7 @@ var ChatService = function(eventBus, storageService) {
 		if (typeof chatList === 'undefined') {
 			storageService.createCollection(_chatCollection);			
 		}
-		if (_checkIfChatExists(chat)) {
+		if (_checkIfChatExists(chatName)) {
 			eventBus.post(events.CHAT_CREATION_FAILED, errorMessages.CHAT_ALREADY_EXISTS);			
 		} else if (chatName === '') {
 			eventBus.post(events.CHAT_CREATION_FAILED, errorMessages.CHATNAME_MUST_BE_FILLED);
@@ -74,8 +74,8 @@ var ChatService = function(eventBus, storageService) {
 		}
 	}
 	
-	var _checkIfChatExists = function(chat) {
-		return storageService.findItemByName(_chatCollection, chat.name) !== null;
+	var _checkIfChatExists = function(chatName) {
+		return storageService.findItemByName(_chatCollection, chatName) !== null;
 	}
 	
 	var _getChatByName = function(chatName) {
