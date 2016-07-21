@@ -69,7 +69,7 @@ var ChatService = function(eventBus, storageService) {
 			eventBus.post(events.MESSAGE_ADDING_FAILED, errorMessage);
 		} else {
 			var chat = _getChatById(messageData.chatId);
-			chat.addMessage(new MessageDTO(messageData.user, message));
+			chat.addMessage(new MessageDTO(messageData.user, message, messageData.color));
 			eventBus.post(events.MESSAGE_ADDED, {'id' : messageData.chatId, 'messages': chat.getMessages()});
 		}
 	}

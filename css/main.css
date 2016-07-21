@@ -72,6 +72,7 @@ button {
   border-width: 1px 1px 3px;
   box-shadow: 0 -1px 0 rgba(255,255,255,0.1) inset;
   margin-bottom: 5px;
+  cursor: pointer;
 }
 
 .add_chat {
@@ -199,12 +200,12 @@ li:hover {
 
 .message_text {
 	display:inline-block;
-	width: 50% !important;
+	width: 60% !important;
 	margin: 5px !important;
 	height: 50px !important;
 	border-radius: 5px;
 	border:1px solid #A9A9A9 !important;
-	color: #666 !important;
+	color: #000;
 	font-weight: 400 !important;
 }
 

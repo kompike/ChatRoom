@@ -236,20 +236,22 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 					.append($('<div/>').attr({'id': chatDivId + '_body', 'class':'chat_body'}))
 					.append($('<div/>').attr('id', chatDivId + '_message_err'))
 					.append($('<input/>').attr({'id': chatDivId + '_input', 'class': 'message_text', 'type' : 'text', 'placeholder' : 'Type here!'}))
-					.append($('<input/>').attr({'id': 'colorpicker'}))
+					.append($('<input/>').attr({'id': 'colorpicker_' + chatDivId}))
 					.append($('<button/>').attr({'id': chatDivId + '_send', 'class' : 'send_message'}).text('Send').click(function(){
 						var messageInfo = {
 							'message': $('#' + chatDivId + '_input').val(),
 							'user': currentUser,
-							'chatId': chatDivId
+							'chatId': chatDivId,
+							'color': $('#' + chatDivId + '_input').css('color')
 						};
 						eventBus.post(events.ADDING_NEW_MESSAGE, messageInfo);
 				}));
 				
-				$("#colorpicker").spectrum({
-					color: "#000",
-					change: function(color) {
-						$('#' + chatDivId + '_input').css({'backgroundColor' : color.toHexString()});
+				$('#colorpicker_' + chatDivId).spectrum({
+					color: '#000',
+					showButtons: false,
+					move: function(color) {
+						$('#' + chatDivId + '_input').css({'color' : color.toHexString()});
 					}
 				});
 				
@@ -265,7 +267,7 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 					for (var i = 0; i < list.length; i++) {
 						var message = list[i];
 						$('#' + chatInfo.id + '_body')
-							.append($('<p>' + message.getAuthor() + ' : ' + message.getMessage() + '</p>'));
+							.append($('<p>' + message.getAuthor() + ' : ' + message.getMessage() + '</p>').css({'color' : message.getColor()}));
 					}
 					
 					$('#' + chatInfo.id + '_input').val('');

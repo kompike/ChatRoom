@@ -1,4 +1,4 @@
-var MessageDTO = function(author, message) {
+var MessageDTO = function(author, message, color) {
 	
 	var _getAuthor = function() {
 		return author;
@@ -6,10 +6,14 @@ var MessageDTO = function(author, message) {
 	var _getMessage = function() {
 		return message;
 	}
+	var _getColor = function() {
+		return color;
+	}
 	
 	return {
 		'getAuthor': _getAuthor,
-		'getMessage': _getMessage
+		'getMessage': _getMessage,
+		'getColor': _getColor
 	};
 }
 
