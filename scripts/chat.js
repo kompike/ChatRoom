@@ -21,7 +21,7 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 		eventBus.subscribe(events.LOGIN_ATTEMPT, userService.onUserLogin);
 		eventBus.subscribe(events.NEW_CHAT_CREATION, chatService.onChatAdded);
 		eventBus.subscribe(events.JOINING_CHAT, chatService.onUserJoined);
-		eventBus.subscribe(events.LEAVING_CHAT, chatService.onUserLeaved);
+		eventBus.subscribe(events.LEAVING_CHAT, chatService.onUserLeft);
 		eventBus.subscribe(events.ADDING_NEW_MESSAGE, chatService.onMessageAdded);
 		
 		registrationComponent.initialize();		
@@ -47,9 +47,9 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 			
 			$('#' + chatDivId).append($('<div/>').attr('id', chatDivId + '_register'))
 			
-			var registrationFormBoxId = _rootDivId + "_box";			
-			var buttonId = registrationFormBoxId + "_btn";			
-			var errorDivId = registrationFormBoxId + "_err";
+			var registrationFormBoxId = _rootDivId + '_box';			
+			var buttonId = registrationFormBoxId + '_btn';			
+			var errorDivId = registrationFormBoxId + '_err';
 				
 			$('#' + _rootDivId).html($('<div/>').attr('id', _rootDivId + '_box')
 				.append($('<h5/>').html('Registration form'))
@@ -62,9 +62,9 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 				.append($('<div/>').attr('id', errorDivId)).append('<br/>')
 				.append($('<button/>').attr('id', buttonId).text('Register').click(function() {														
 					var user = {
-						"nickname" : $('#' + _rootDivId + '_nickname').val(),
-						"password" : $('#' + _rootDivId + '_password').val(),
-						"repeatPassword" : $('#' + _rootDivId + '_repeat_password').val()
+						'nickname' : $('#' + _rootDivId + '_nickname').val(),
+						'password' : $('#' + _rootDivId + '_password').val(),
+						'repeatPassword' : $('#' + _rootDivId + '_repeat_password').val()
 					};		
 					eventBus.post(events.NEW_USER_ADDITION, user);			
 				})))
@@ -85,7 +85,7 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 		};
 		
 		return {
-			"initialize" : _initialize
+			'initialize' : _initialize
 		};
 	}
 	
@@ -97,9 +97,9 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 			
 			$('#' + chatDivId).append($('<div/>').attr('id', _rootDivId))
 			
-			var loginFormBoxId = _rootDivId + "_box";			
-			var buttonId = loginFormBoxId + "_btn";			
-			var errorDivId = loginFormBoxId + "_err";
+			var loginFormBoxId = _rootDivId + '_box';			
+			var buttonId = loginFormBoxId + '_btn';			
+			var errorDivId = loginFormBoxId + '_err';
 				
 			$('#' + _rootDivId).html($('<div/>').attr('id', _rootDivId + '_box')
 				.append($('<h5/>').html('Login form'))
@@ -110,8 +110,8 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 				.append($('<div/>').attr('id', errorDivId)).append('<br/>')
 				.append($('<button/>').attr('id', buttonId).text('Login').click(function() {														
 					var user = {
-						"nickname" : $('#' + _rootDivId + '_nickname').val(),
-						"password" : $('#' + _rootDivId + '_password').val()
+						'nickname' : $('#' + _rootDivId + '_nickname').val(),
+						'password' : $('#' + _rootDivId + '_password').val()
 					};				
 					eventBus.post(events.LOGIN_ATTEMPT, user);			
 				})))
@@ -133,8 +133,8 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 		};
 		
 		return {
-			"initialize" : _initialize,
-			"onUserLoggedIn" : _onUserLoggedIn
+			'initialize' : _initialize,
+			'onUserLoggedIn' : _onUserLoggedIn
 		};
 	}
 	
@@ -147,7 +147,7 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 			eventBus.subscribe(events.CHAT_LEAVING_FAILED, _onActionFailed);
 			eventBus.subscribe(events.CHAT_LIST_UPDATED, _onChatCreated);
 			eventBus.subscribe(events.USER_JOINED_CHAT, _onUserJoined);
-			eventBus.subscribe(events.USER_LEFT_CHAT, _onChatLeaved);
+			eventBus.subscribe(events.USER_LEFT_CHAT, _onUserLeft);
 			
 			$('#' + chatDivId).append($('<div/>').attr('id', _rootDivId));
 			$('#' + _rootDivId).append($('<div/>').attr('id', _rootDivId + '_header'));
@@ -195,7 +195,7 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 			$('#' + _rootDivId + '_box_err').html($('<span/>').text(message));
 		}
 		
-		var _onChatLeaved = function(chatId) {
+		var _onUserLeft = function(chatId) {
 			_clearFields();
 			$('#' + chatId).remove();
 		}
@@ -219,13 +219,12 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 			var _init = function(chatInfo) {
 				
 				var chatDivId = chatInfo.id;
-				var chatName = chatInfo.chatName;
 					
 				eventBus.subscribe(events.MESSAGE_ADDING_FAILED, _onMessageAddingFailed);
 				eventBus.subscribe(events.MESSAGE_ADDED, _onMessageListUpdated);
 				
 				$('<div/>').appendTo('body').attr({'id': chatDivId, 'class' : 'chat_box'})
-					.append($('<div/>').attr('class', 'chat_header').text('Chat ' + chatName)
+					.append($('<div/>').attr('class', 'chat_header').text('Chat ' + chatInfo.chatName)
 						.append($('<span/>').text('x').css({'float':'right', 'color':'white', 'cursor':'pointer', 'title':'Leave chat'}).click(function() {
 							var chatInfo = {
 								'user': currentUser,
@@ -290,7 +289,7 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 		};
 	}
 	
-	return {"initChat" : _initChat};
+	return {'initChat' : _initChat};
 }
 
 if (typeof define !== 'function') {

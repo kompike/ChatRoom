@@ -306,7 +306,7 @@ describe('Chat service shold', function(){
 				.isNotEmpty()
 				.hasLength(1);
 		
-		chatService.onUserLeaved({'chatId' : chatId, 'user' : user});
+		chatService.onUserLeft({'chatId' : chatId, 'user' : user});
 		
 		test
 			.bool(userLeaved)
@@ -350,7 +350,7 @@ describe('Chat service shold', function(){
 				.isNotEmpty()
 				.hasLength(1);
 		
-		chatService.onUserLeaved({'chatId' : chatId, 'user' : user});
+		chatService.onUserLeft({'chatId' : chatId, 'user' : user});
 		
 		test
 			.bool(delivered)
@@ -358,7 +358,7 @@ describe('Chat service shold', function(){
 			.array(joinedUsers)
 				.isEmpty();
 		
-		chatService.onUserLeaved({'chatId' : chatId, 'user' : user});
+		chatService.onUserLeft({'chatId' : chatId, 'user' : user});
 		
 		test
 			.bool(delivered)

@@ -47,7 +47,7 @@ var ChatService = function(eventBus, storageService) {
 		}
 	}
 		
-	var _onUserLeaved = function(chatData) {
+	var _onUserLeft = function(chatData) {
 		var chat = _getChatById(chatData.chatId);
 		var user = chatData.user;
 		var index = chat.getUsers().indexOf(user);
@@ -100,7 +100,7 @@ var ChatService = function(eventBus, storageService) {
 		'onChatAdded' : _onChatAdded,
 		'onMessageAdded' : _onMessageAdded,
 		'onUserJoined' : _onUserJoined, 
-		'onUserLeaved' : _onUserLeaved, 
+		'onUserLeft' : _onUserLeft, 
 		'getAllChats' : _getAllChats,
 		'getChatByName' : _getChatByName		
 	};	
