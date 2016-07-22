@@ -11,7 +11,8 @@ var errorMessages = {
 	USER_ALREADY_JOINED : 'You already joined this chat',
 	USER_ALREADY_LEFT : 'You already left this chat',
 	
-	EMPTY_MESSAGE_NOT_ALLOWED : 'You can not post empty message'
+	EMPTY_MESSAGE_NOT_ALLOWED : 'You can not post empty message',
+	USER_IS_NOT_JOINED_TO_CURRENT_CHAT : 'You can not post messages to the chat you are not joined'
 }
 
 if (typeof define !== 'function') {

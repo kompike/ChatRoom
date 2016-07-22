@@ -382,6 +382,8 @@ describe('Chat service should', function(){
 		var chatId = chatService.onChatAdded(chat);
 		var createdChat = chatService.getChatByName(chatName);
 		
+		chatService.onUserJoined({'chatName' : chatName, 'user' : nickname});
+		
 		var messageCreated = false;
 		var expectedMessageData = {'chatId' : chatId, 'messages': createdChat.getMessages()}
 		
@@ -420,6 +422,8 @@ describe('Chat service should', function(){
 		var chatId = chatService.onChatAdded(chat);
 		var createdChat = chatService.getChatByName(chatName);
 		
+		chatService.onUserJoined({'chatName' : chatName, 'user' : nickname});
+		
 		var messageCreationFailed = false;
 		var expectedErrorData = {
 			'message' : 'You can not post empty message',
@@ -432,6 +436,47 @@ describe('Chat service should', function(){
 		
 		var messageInfo = {
 			'message' : '',
+			'chatId' : chatId,
+			'user' : nickname
+		};
+		
+		chatService.onMessageAdded(messageInfo);
+		
+		test
+			.bool(messageCreationFailed)
+				.isTrue()
+			.array(createdChat.getMessages())
+				.isEmpty();
+	});
+	
+	it('Avoid post messages by not joined user', function(){
+	
+		var storage = new StorageService();
+		var chatService = new ChatService(eventBus, storage);
+		var chatName = 'Chat';
+		var nickname = 'User';
+			
+		var chat = {
+			'chatName' : chatName,
+			'owner' : nickname
+		};
+		
+		var chatId = chatService.onChatAdded(chat);
+		var createdChat = chatService.getChatByName(chatName);
+		
+		var messageCreationFailed = false;
+		
+		var expectedErrorData = {
+			'message' : 'You can not post messages to the chat you are not joined',
+			'chatId' : chatId
+		};
+		
+		eventBus.subscribe(events.MESSAGE_ADDING_FAILED, function(messageData) {
+			messageCreationFailed = (messageData.message === expectedErrorData.message && messageData.chatId === expectedErrorData.chatId);
+		});
+		
+		var messageInfo = {
+			'message' : 'Hello',
 			'chatId' : chatId,
 			'user' : nickname
 		};

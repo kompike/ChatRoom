@@ -61,16 +61,27 @@ var ChatService = function(eventBus, storageService) {
 		
 	var _onMessageAdded = function(messageData) {	
 		var message = messageData.message;
-		if (message.trim() === '') {
+		var chatId = messageData.chatId;
+		var chat = _getChatById(chatId);
+		var userList = chat.getUsers();
+		var user = messageData.user;
+		if (userList.indexOf(user) < 0) {
 			var errorMessage = {
-				'message' : errorMessages.EMPTY_MESSAGE_NOT_ALLOWED,
-				'chatId' : messageData.chatId
+				'message' : errorMessages.USER_IS_NOT_JOINED_TO_CURRENT_CHAT,
+				'chatId' : chatId
 			};
 			eventBus.post(events.MESSAGE_ADDING_FAILED, errorMessage);
 		} else {
-			var chat = _getChatById(messageData.chatId);
-			chat.addMessage(new MessageDTO(messageData.user, message, messageData.color));
-			eventBus.post(events.MESSAGE_ADDED, {'chatId' : messageData.chatId, 'messages': chat.getMessages()});
+			if (message.trim() === '') {
+				var errorMessage = {
+					'message' : errorMessages.EMPTY_MESSAGE_NOT_ALLOWED,
+					'chatId' : chatId
+				};
+				eventBus.post(events.MESSAGE_ADDING_FAILED, errorMessage);
+			} else {
+				chat.addMessage(new MessageDTO(user, message, messageData.color));
+				eventBus.post(events.MESSAGE_ADDED, {'chatId' : chatId, 'messages': chat.getMessages()});				
+			}
 		}
 	}
 	
