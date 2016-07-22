@@ -10,27 +10,29 @@ var test = require('unit.js');
 
 /* TESTS */
 
-describe('Testing chat creation', function(){
+describe('Chat service shold', function(){
 	
-	it('Testing chat creation', function(){	
+	it('Create new chat', function(){	
 
 		var storage = new StorageService();
 		var chatService = new ChatService(eventBus, storage);
 		
 		var delivered = false;
+		var chatName = 'Chat';
+		var owner = 'User';
 		
-		eventBus.subscribe(events.CHAT_CREATED, function(chatList) {
+		eventBus.subscribe(events.CHAT_LIST_UPDATED, function(chatList) {
 			delivered = (chatList.length === 1);
 		});
 		
 		var chat = {
-			'name' : 'Chat',
-			'owner' : 'User'
+			'name' : chatName,
+			'owner' : owner
 		};
 		
 		var chatId = chatService.onChatAdded(chat);
 		
-		var createdChat = chatService.getChatByName('Chat');
+		var createdChat = chatService.getChatByName(chatName);
 		var chatList = chatService.getAllChats();
 		var firstChatFromList = chatList[0];
 		
@@ -38,7 +40,7 @@ describe('Testing chat creation', function(){
 			.bool(delivered)
 				.isTrue()
 			.string(createdChat.getOwner())
-				.isEqualTo('User')
+				.isEqualTo(owner)
 			.string(chatId)
 				.isEqualTo('chat_0')
 			.array(chatList)
@@ -48,7 +50,7 @@ describe('Testing chat creation', function(){
 				.is(createdChat);
 	});
 	
-	it('Testing already existing chat', function(){		
+	it('Avoid creating already existing chat', function(){		
 
 		var storage = new StorageService();
 		var chatService = new ChatService(eventBus, storage);
@@ -56,8 +58,9 @@ describe('Testing chat creation', function(){
 		var delivered = false;
 		var expectedMessage = 'Chat already exists';
 		var isChatCreated = false;
+		var chatName = 'Chat';
 		
-		eventBus.subscribe(events.CHAT_CREATED, function(chatList) {
+		eventBus.subscribe(events.CHAT_LIST_UPDATED, function(chatList) {
 			isChatCreated = (chatList.length === 1);
 		});
 		
@@ -66,7 +69,7 @@ describe('Testing chat creation', function(){
 		});
 		
 		var chat = {
-			'name' : 'Chat',
+			'name' : chatName,
 			'owner' : 'User'
 		};
 		
@@ -85,7 +88,60 @@ describe('Testing chat creation', function(){
 				
 		chatService.onChatAdded(chat);
 		
-		var createdChat = chatService.getChatByName('Chat');
+		test
+			.bool(isChatCreated)
+				.isTrue()
+			.bool(delivered)
+				.isTrue()
+			.array(chatList)
+				.isNotEmpty()
+				.hasLength(1);
+	});
+	
+	it('Trim chat name while creating new chat', function(){		
+
+		var storage = new StorageService();
+		var chatService = new ChatService(eventBus, storage);
+		
+		var delivered = false;
+		var expectedMessage = 'Chat already exists';
+		var isChatCreated = false;
+		var chatName = 'Chat';
+		var chatNameWithWhitespaces = '   Chat  ';
+		var owner = 'User';
+		
+		eventBus.subscribe(events.CHAT_LIST_UPDATED, function(chatList) {
+			isChatCreated = (chatList.length === 1);
+		});
+		
+		eventBus.subscribe(events.CHAT_CREATION_FAILED, function(message) {
+			delivered = (message === expectedMessage);
+		});
+		
+		var chat = {
+			'name' : chatName,
+			'owner' : owner
+		};
+		
+		chatService.onChatAdded(chat);
+		
+		var chatList = chatService.getAllChats();
+		
+		test
+			.bool(isChatCreated)
+				.isTrue()
+			.bool(delivered)
+				.isFalse()
+			.array(chatList)
+				.isNotEmpty()
+				.hasLength(1);
+		
+		var newChat = {
+			'name' : chatNameWithWhitespaces,
+			'owner' : owner
+		};
+				
+		chatService.onChatAdded(newChat);
 		
 		test
 			.bool(isChatCreated)
@@ -97,7 +153,7 @@ describe('Testing chat creation', function(){
 				.hasLength(1);
 	});
 	
-	it('Testing empty chat name', function(){
+	it('Avoid creating chat with empty name', function(){
 
 		var storage = new StorageService();
 		var chatService = new ChatService(eventBus, storage);
@@ -127,37 +183,31 @@ describe('Testing chat creation', function(){
 			.value(createdChat)
 				.isNull();
 	});	
-});
-
-describe('Testing user joining', function(){
 	
-	it('User successfully joined', function(){
+	it('Join user to chat', function(){
 	
 		var storage = new StorageService();
 		var chatService = new ChatService(eventBus, storage);
+		var chatName = 'Chat';
+		var nickname = 'User';
 			
 		var chat = {
-			'name' : 'Chat',
-			'owner' : 'User'
+			'name' : chatName,
+			'owner' : nickname
 		};
 		
 		var chatId = chatService.onChatAdded(chat);
-		var createdChat = chatService.getChatByName(chat.name);
+		var createdChat = chatService.getChatByName(chatName);
 				
-		var user = new UserDTO('User', 'password');
-		
-		var expectedChat = {
-			chatName : 'Chat',
-			chatId : 'chat_0'
-		};
-		
+		var user = new UserDTO(nickname, 'password');
+				
 		var userJoined = false;
 		
-		eventBus.subscribe(events.USER_JOINED, function(chatData) {
-			userJoined = (expectedChat.chatName === chatData.chatName && expectedChat.chatId === chatData.id);
+		eventBus.subscribe(events.USER_JOINED_CHAT, function(chatData) {
+			userJoined = (chatName === chatData.chatName && chatId === chatData.id);
 		});
 		
-		chatService.onUserJoined({'chatName' : chat.name, 'user' : user});
+		chatService.onUserJoined({'chatName' : chatName, 'user' : user});
 		
 		var joinedUsers = createdChat.getUsers();
 		
@@ -169,39 +219,37 @@ describe('Testing user joining', function(){
 				.hasLength(1);
 	});
 	
-	it('Failed joining chat', function(){
+	it('Avoid joining already joined user', function(){
 	
 		var storage = new StorageService();
 		var chatService = new ChatService(eventBus, storage);
+		var chatName = 'Chat';
+		var nickname = 'User';
 			
 		var chat = {
-			'name' : 'Chat',
-			'owner' : 'User'
+			'name' : chatName,
+			'owner' : nickname
 		};
 		
 		var chatId = chatService.onChatAdded(chat);
-		var createdChat = chatService.getChatByName(chat.name);
+		var createdChat = chatService.getChatByName(chatName);
 				
-		var user = new UserDTO('User', 'password');
+		var user = new UserDTO(nickname, 'password');
 		
 		var delivered = false;
 		var expectedMessage = 'You already joined this chat';
-				
-		var expectedChat = {
-			chatName : 'Chat',
-			chatId : 'chat_0'
-		};
+			
 		var userJoined = false;
 		
-		eventBus.subscribe(events.USER_JOINED, function(chatData) {
-			userJoined = (expectedChat.chatName === chatData.chatName && expectedChat.chatId === chatData.id);
+		eventBus.subscribe(events.USER_JOINED_CHAT, function(chatData) {
+			userJoined = (chatName === chatData.chatName && chatId === chatData.id);
 		});
 		
-		eventBus.subscribe(events.USER_JOINING_FAILED, function(message) {
+		eventBus.subscribe(events.CHAT_JOINING_FAILED, function(message) {
 			delivered = (message === expectedMessage);
 		});
 		
-		chatService.onUserJoined({'chatName' : chat.name, 'user' : user});
+		chatService.onUserJoined({'chatName' : chatName, 'user' : user});
 		
 		var joinedUsers = createdChat.getUsers();
 		
@@ -214,7 +262,7 @@ describe('Testing user joining', function(){
 				.isNotEmpty()
 				.hasLength(1);
 		
-		chatService.onUserJoined({'chatName' : chat.name, 'user' : user});
+		chatService.onUserJoined({'chatName' : chatName, 'user' : user});
 		
 		test
 			.bool(delivered)
@@ -223,32 +271,31 @@ describe('Testing user joining', function(){
 				.isNotEmpty()
 				.hasLength(1);
 	});
-});
-
-describe('Testing user leaving chat', function(){
 	
-	it('User successfully leaved', function(){
+	it('Let user successfully leave chat', function(){
 	
 		var storage = new StorageService();
 		var chatService = new ChatService(eventBus, storage);
+		var chatName = 'Chat';
+		var nickname = 'User';
 			
 		var chat = {
-			'name' : 'Chat',
-			'owner' : 'User'
+			'name' : chatName,
+			'owner' : nickname
 		};
 		
 		var chatId = chatService.onChatAdded(chat);
-		var createdChat = chatService.getChatByName(chat.name);
+		var createdChat = chatService.getChatByName(chatName);
 				
-		var user = new UserDTO('User', 'password');
+		var user = new UserDTO(nickname, 'password');
 		
 		var userLeaved = false;
 		
-		eventBus.subscribe(events.CHAT_LEAVED, function(id) {
+		eventBus.subscribe(events.USER_LEFT_CHAT, function(id) {
 			userLeaved = (chatId === id);
 		});
 		
-		chatService.onUserJoined({'chatName' : chat.name, 'user' : user});
+		chatService.onUserJoined({'chatName' : chatName, 'user' : user});
 		
 		var joinedUsers = createdChat.getUsers();
 		
@@ -268,29 +315,31 @@ describe('Testing user leaving chat', function(){
 				.isEmpty();
 	});
 	
-	it('Failed leaving chat', function(){
+	it('Avoid user leave chat he already left', function(){
 	
 		var storage = new StorageService();
 		var chatService = new ChatService(eventBus, storage);
+		var chatName = 'Chat';
+		var nickname = 'User';
 			
 		var chat = {
-			'name' : 'Chat',
-			'owner' : 'User'
+			'name' : chatName,
+			'owner' : nickname
 		};
 		
 		var chatId = chatService.onChatAdded(chat);
-		var createdChat = chatService.getChatByName(chat.name);
+		var createdChat = chatService.getChatByName(chatName);
 				
-		var user = new UserDTO('User', 'password');
+		var user = new UserDTO(nickname, 'password');
 		
 		var delivered = false;
-		var expectedMessage = 'You already leaved this chat';
+		var expectedMessage = 'You already left this chat';
 		
-		eventBus.subscribe(events.USER_LEAVING_FAILED, function(message) {
+		eventBus.subscribe(events.CHAT_LEAVING_FAILED, function(message) {
 			delivered = (message === expectedMessage);
 		});
 		
-		chatService.onUserJoined({'chatName' : chat.name, 'user' : user});
+		chatService.onUserJoined({'chatName' : chatName, 'user' : user});
 		
 		var joinedUsers = createdChat.getUsers();
 		
@@ -317,22 +366,21 @@ describe('Testing user leaving chat', function(){
 			.array(joinedUsers)
 				.isEmpty();
 	});
-});
-
-describe('Testing adding new message', function(){
 	
-	it('New message added', function(){
+	it('Add new messages', function(){
 	
 		var storage = new StorageService();
 		var chatService = new ChatService(eventBus, storage);
+		var chatName = 'Chat';
+		var nickname = 'User';
 			
 		var chat = {
-			'name' : 'Chat',
-			'owner' : 'User'
+			'name' : chatName,
+			'owner' : nickname
 		};
 		
 		var chatId = chatService.onChatAdded(chat);
-		var createdChat = chatService.getChatByName(chat.name);
+		var createdChat = chatService.getChatByName(chatName);
 		
 		var messageCreated = false;
 		var expectedMessageData = {'id' : chatId, 'messages': createdChat.getMessages()}
@@ -344,7 +392,7 @@ describe('Testing adding new message', function(){
 		var messageInfo = {
 			'message' : 'Hello',
 			'chatId' : chatId,
-			'user' : 'User'
+			'user' : nickname
 		};
 		
 		chatService.onMessageAdded(messageInfo);
@@ -357,24 +405,26 @@ describe('Testing adding new message', function(){
 				.hasLength(1);
 	});
 	
-	it('New message adding failed', function(){
+	it('Avoid adding empty message', function(){
 	
 		var storage = new StorageService();
 		var chatService = new ChatService(eventBus, storage);
+		var chatName = 'Chat';
+		var nickname = 'User';
 			
 		var chat = {
-			'name' : 'Chat',
-			'owner' : 'User'
+			'name' : chatName,
+			'owner' : nickname
 		};
 		
 		var chatId = chatService.onChatAdded(chat);
-		var createdChat = chatService.getChatByName(chat.name);
+		var createdChat = chatService.getChatByName(chatName);
 		
 		var messageCreationFailed = false;
 		var expectedErrorData = {
-				'message' : 'You can not post empty message',
-				'chatId' : chatId
-			};
+			'message' : 'You can not post empty message',
+			'chatId' : chatId
+		};
 		
 		eventBus.subscribe(events.MESSAGE_ADDING_FAILED, function(messageData) {
 			messageCreationFailed = (messageData.message === expectedErrorData.message && messageData.chatId === expectedErrorData.chatId);
@@ -383,7 +433,7 @@ describe('Testing adding new message', function(){
 		var messageInfo = {
 			'message' : '',
 			'chatId' : chatId,
-			'user' : 'User'
+			'user' : nickname
 		};
 		
 		chatService.onMessageAdded(messageInfo);

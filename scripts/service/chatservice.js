@@ -25,7 +25,7 @@ var ChatService = function(eventBus, storageService) {
 			var chatDTO = new ChatDTO(chatName, chat.owner, new Array(), new Array());
 			newChatId = storageService.addItem(_chatCollection, chatDTO);
 			var chatList = _getAllChats();
-			eventBus.post(events.CHAT_CREATED, chatList);
+			eventBus.post(events.CHAT_LIST_UPDATED, chatList);
 		}
 		
 		return newChatId;
@@ -40,10 +40,10 @@ var ChatService = function(eventBus, storageService) {
 		var userList = chat.getUsers();
 		var user = chatData.user;
 		if (userList.indexOf(user) > -1) {
-			eventBus.post(events.USER_JOINING_FAILED, errorMessages.USER_ALREADY_JOINED);
+			eventBus.post(events.CHAT_JOINING_FAILED, errorMessages.USER_ALREADY_JOINED);
 		} else {
 			chat.addUser(user);
-			eventBus.post(events.USER_JOINED, {'id':chat.getId(), 'chatName':chat.getName(), 'messages' : chat.getMessages()});					
+			eventBus.post(events.USER_JOINED_CHAT, {'id':chat.getId(), 'chatName':chat.getName(), 'messages' : chat.getMessages()});					
 		}
 	}
 		
@@ -52,16 +52,16 @@ var ChatService = function(eventBus, storageService) {
 		var user = chatData.user;
 		var index = chat.getUsers().indexOf(user);
 		if (index < 0) {
-			eventBus.post(events.USER_LEAVING_FAILED, errorMessages.USER_ALREADY_LEAVED);
+			eventBus.post(events.CHAT_LEAVING_FAILED, errorMessages.USER_ALREADY_LEFT);
 		} else {
 			chat.getUsers().splice(index, 1);
-			eventBus.post(events.CHAT_LEAVED, chat.getId());					
+			eventBus.post(events.USER_LEFT_CHAT, chat.getId());					
 		}
 	}
 		
 	var _onMessageAdded = function(messageData) {	
-		var message = messageData.message.trim();
-		if (message === '') {
+		var message = messageData.message;
+		if (message.trim() === '') {
 			var errorMessage = {
 				'message' : errorMessages.EMPTY_MESSAGE_NOT_ALLOWED,
 				'chatId' : messageData.chatId

@@ -117,7 +117,7 @@ describe('User registration service should', function(){
 		
 		var user = {
 			'nickname': nickname, 
-			'password': password, 
+			'password': 'password', 
 			'repeatPassword': 'pass'
 		};
 			
@@ -150,7 +150,7 @@ describe('User registration service should', function(){
 		
 		var user = {
 			'nickname': '', 
-			'password': password, 
+			'password': 'password', 
 			'repeatPassword': 'pass'
 		};
 			
@@ -167,7 +167,65 @@ describe('User registration service should', function(){
 				.isNull()
 			.array(userList)
 				.isEmpty();
-	});		
+	});	
+	
+	it('Trim nickname while registering new user', function(){
+
+		var storage = new StorageService();
+		var userService = new UserService(eventBus, storage);
+
+		var expectedMessage = 'User already exists';
+		var delivered = false;
+
+		var nicknameWithWhitespaces = '    User   ';
+		var nickname = 'User';
+		var password = 'password';
+		var registered = false;
+
+		eventBus.subscribe(events.USER_REGISTERED, function(user) {
+			registered = (user.getName() === nickname);
+		});
+
+		eventBus.subscribe(events.REGISTRATION_FAILED, function(message) {
+			delivered = (expectedMessage === message);
+		});
+		
+		var user = {
+			'nickname': nickname, 
+			'password': password, 
+			'repeatPassword': password
+		};
+
+		userService.onUserAdded(user);
+		
+		var userList = userService.getUsers();
+		
+		test
+			.bool(delivered)
+				.isFalse()
+			.bool(registered)
+				.isTrue()
+			.array(userList)
+				.isNotEmpty()
+				.hasLength(1);
+		
+		var newUser = {
+			'nickname': nicknameWithWhitespaces, 
+			'password': password, 
+			'repeatPassword': password
+		};
+		
+		userService.onUserAdded(newUser);
+		
+		test
+			.bool(delivered)
+				.isTrue()
+			.bool(registered)
+				.isTrue()
+			.array(userList)
+				.isNotEmpty()
+				.hasLength(1);
+	});	
 });
 
 describe('User login service should', function(){

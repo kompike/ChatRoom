@@ -9,7 +9,7 @@ var errorMessages = {
 	CHATNAME_MUST_BE_FILLED : 'Chat name must be filled',
 	
 	USER_ALREADY_JOINED : 'You already joined this chat',
-	USER_ALREADY_LEAVED : 'You already leaved this chat',
+	USER_ALREADY_LEFT : 'You already left this chat',
 	
 	EMPTY_MESSAGE_NOT_ALLOWED : 'You can not post empty message'
 }
