@@ -9,24 +9,27 @@ var test = require('unit.js');
 
 /* TESTS */
 
-describe('Testing user registration', function(){
+describe('User registration service should', function(){
 
-	it('New user registered', function(){
+	it('Register new user', function(){
 
 		var storage = new StorageService();
 		var userService = new UserService(eventBus, storage);
 		
-		var expectedNickname = 'User';
+		var nickname = 'User';
+		var password = 'password';
 		var registered = false;
+		
+		var expectedNickname = nickname;
 		
 		eventBus.subscribe(events.USER_REGISTERED, function(user) {
 			registered = (user.getName() === expectedNickname);
 		});
 		
 		var user = {
-			"nickname":"User", 
-			"password":"password", 
-			"repeatPassword":"password"
+			'nickname': nickname, 
+			'password': password, 
+			'repeatPassword': password
 		};
 		
 		userService.onUserAdded(user);		
@@ -48,7 +51,7 @@ describe('Testing user registration', function(){
 				.hasLength(1);
 	});
 	
-	it('User already exists', function(){
+	it('Avoid registering already existing user', function(){
 
 		var storage = new StorageService();
 		var userService = new UserService(eventBus, storage);
@@ -56,21 +59,22 @@ describe('Testing user registration', function(){
 		var expectedMessage = 'User already exists';
 		var delivered = false;
 
-		var expectedNickname = 'User';
+		var nickname = 'User';
+		var password = 'password';
 		var registered = false;
 
 		eventBus.subscribe(events.USER_REGISTERED, function(user) {
-			registered = (user.getName() === expectedNickname);
+			registered = (user.getName() === nickname);
 		});
 
 		eventBus.subscribe(events.REGISTRATION_FAILED, function(message) {
 			delivered = (expectedMessage === message);
 		});
-
+		
 		var user = {
-			"nickname":"User", 
-			"password":"password", 
-			"repeatPassword":"password"
+			'nickname': nickname, 
+			'password': password, 
+			'repeatPassword': password
 		};
 
 		userService.onUserAdded(user);
@@ -98,12 +102,13 @@ describe('Testing user registration', function(){
 				.hasLength(1);
 	});
 	
-	it('Testing passwords equality', function(){
+	it('Check passwords equality', function(){
 		
 		var storage = new StorageService();
 		var userService = new UserService(eventBus, storage);
 		
 		var expectedMessage = 'Passwords must be equal';
+		var nickname = 'User';
 		var delivered = false;
 		
 		eventBus.subscribe(events.REGISTRATION_FAILED, function(message) {
@@ -111,14 +116,14 @@ describe('Testing user registration', function(){
 		});
 		
 		var user = {
-			"nickname":"User", 
-			"password":"password", 
-			"repeatPassword":"pass"
+			'nickname': nickname, 
+			'password': password, 
+			'repeatPassword': 'pass'
 		};
 			
 		userService.onUserAdded(user);
 		
-		var userFromStorage = userService.getUserByNickname('User');
+		var userFromStorage = userService.getUserByNickname(nickname);
 		
 		var userList = userService.getUsers();
 		
@@ -131,7 +136,7 @@ describe('Testing user registration', function(){
 				.isEmpty();
 	});	
 
-	it('Testing empty fields', function(){
+	it('Check empty fields', function(){
 		
 		var storage = new StorageService();
 		var userService = new UserService(eventBus, storage);
@@ -144,9 +149,9 @@ describe('Testing user registration', function(){
 		});
 		
 		var user = {
-			"nickname":"", 
-			"password":"password", 
-			"repeatPassword":"pass"
+			'nickname': '', 
+			'password': password, 
+			'repeatPassword': 'pass'
 		};
 			
 		userService.onUserAdded(user);
@@ -165,22 +170,25 @@ describe('Testing user registration', function(){
 	});		
 });
 
-describe('Testing user login', function(){
+describe('User login service should', function(){
 	
 	var storage = new StorageService();
 	var userService = new UserService(eventBus, storage);
-		
+	
+	var nickname = 'User';
+	var password = 'password';
+	
 	var user = {
-		"nickname":"User", 
-		"password":"password", 
-		"repeatPassword":"password"
+		'nickname': nickname, 
+		'password': password, 
+		'repeatPassword': password
 	};
 		
 	userService.onUserAdded(user);
 
-	it('Testing user login', function(){
+	it('Login registered user', function(){
 		
-		var expectedName = 'User';
+		var expectedName = nickname;
 		var delivered = false;
 		
 		eventBus.subscribe(events.LOGIN_SUCCESSFULL, function(user) {
@@ -188,8 +196,8 @@ describe('Testing user login', function(){
 		});
 		
 		userService.onUserLogin({
-			"nickname":"User", 
-			"password":"password"
+			'nickname': nickname, 
+			'password': password
 		});
 		
 		test
@@ -197,7 +205,7 @@ describe('Testing user login', function(){
 				.isTrue();
 	});	
 
-	it('Testing not registered user login', function(){
+	it('Avoid login not registered user', function(){
 		
 		var expectedMessage = 'Incorrect login / password';
 		var delivered = false;
@@ -207,8 +215,8 @@ describe('Testing user login', function(){
 		});
 		
 		userService.onUserLogin({
-			"nickname":"User1", 
-			"password":"password"
+			'nickname': 'NotRegisteredUser', 
+			'password': password
 		});
 		
 		test
@@ -216,7 +224,7 @@ describe('Testing user login', function(){
 				.isTrue();
 	});
 	
-	it('Testing incorrect password', function(){
+	it('Check password correctness', function(){
 		
 		var expectedMessage = 'Incorrect login / password';
 		var delivered = false;
@@ -224,10 +232,10 @@ describe('Testing user login', function(){
 		eventBus.subscribe(events.LOGIN_FAILED, function(message) {
 			delivered = (message === expectedMessage);
 		});
-				
+		
 		userService.onUserLogin({
-			"nickname":"User", 
-			"password":"pass"
+			'nickname': nickname, 
+			'password': 'IncorrectPassword'
 		});
 		
 		test
