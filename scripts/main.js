@@ -4,9 +4,9 @@ define(function(require) {
 	
 	var EventBus = require('./eventbus');
 	
-	var events = require('./events');
+	var Events = require('./events');
 	
-	var errorMessages = require('./errormessages');
+	var ErrorMessages = require('./errormessages');
 	
 	var UserDTO = require('./dto/userDTO');
 	

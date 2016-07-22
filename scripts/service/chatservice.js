@@ -1,8 +1,8 @@
 if (typeof define !== 'function') {
     var ChatDTO = require('../dto/chatDTO');
     var MessageDTO = require('../dto/messageDTO');
-	var events = require('../events');
-	var errorMessages = require('../errormessages');
+	var Events = require('../events');
+	var ErrorMessages = require('../errorMessages');
 }
 
 var ChatService = function(eventBus, storageService) {
@@ -18,14 +18,15 @@ var ChatService = function(eventBus, storageService) {
 			storageService.createCollection(_chatCollection);			
 		}
 		if (_checkIfChatExists(chatName)) {
-			eventBus.post(events.CHAT_CREATION_FAILED, errorMessages.CHAT_ALREADY_EXISTS);			
+			eventBus.post(Events.CHAT_CREATION_FAILED, ErrorMessages.CHAT_ALREADY_EXISTS);			
 		} else if (chatName === '') {
-			eventBus.post(events.CHAT_CREATION_FAILED, errorMessages.CHATNAME_MUST_BE_FILLED);
+			eventBus.post(Events.CHAT_CREATION_FAILED, ErrorMessages.CHATNAME_MUST_BE_FILLED);
 		} else {
 			var chatDTO = new ChatDTO(chatName, chat.owner, new Array(), new Array());
 			newChatId = storageService.addItem(_chatCollection, chatDTO);
 			var chatList = _getAllChats();
-			eventBus.post(events.CHAT_LIST_UPDATED, chatList);
+			eventBus.post(Events.CHAT_CREATED, ErrorMessages.CHAT_SUCCESSFULLY_CREATED)
+			eventBus.post(Events.CHAT_LIST_UPDATED, chatList);
 		}
 		
 		return newChatId;
@@ -40,10 +41,10 @@ var ChatService = function(eventBus, storageService) {
 		var userList = chat.getUsers();
 		var user = chatData.user;
 		if (userList.indexOf(user) > -1) {
-			eventBus.post(events.CHAT_JOINING_FAILED, errorMessages.USER_ALREADY_JOINED);
+			eventBus.post(Events.CHAT_JOINING_FAILED, ErrorMessages.USER_ALREADY_JOINED);
 		} else {
 			chat.addUser(user);
-			eventBus.post(events.USER_JOINED_CHAT, {'chatId':chat.getId(), 'chatName':chat.getName(), 'messages' : chat.getMessages()});					
+			eventBus.post(Events.USER_JOINED_CHAT, {'chatId':chat.getId(), 'chatName':chat.getName(), 'messages' : chat.getMessages()});					
 		}
 	}
 		
@@ -52,10 +53,10 @@ var ChatService = function(eventBus, storageService) {
 		var user = chatData.user;
 		var index = chat.getUsers().indexOf(user);
 		if (index < 0) {
-			eventBus.post(events.CHAT_LEAVING_FAILED, errorMessages.USER_ALREADY_LEFT);
+			eventBus.post(Events.CHAT_LEAVING_FAILED, ErrorMessages.USER_ALREADY_LEFT);
 		} else {
 			chat.getUsers().splice(index, 1);
-			eventBus.post(events.USER_LEFT_CHAT, chat.getId());					
+			eventBus.post(Events.USER_LEFT_CHAT, chat.getId());					
 		}
 	}
 		
@@ -67,20 +68,20 @@ var ChatService = function(eventBus, storageService) {
 		var user = messageData.user;
 		if (userList.indexOf(user) < 0) {
 			var errorMessage = {
-				'message' : errorMessages.USER_IS_NOT_JOINED_TO_CURRENT_CHAT,
+				'message' : ErrorMessages.USER_IS_NOT_JOINED_TO_CURRENT_CHAT,
 				'chatId' : chatId
 			};
-			eventBus.post(events.MESSAGE_ADDING_FAILED, errorMessage);
+			eventBus.post(Events.MESSAGE_ADDING_FAILED, errorMessage);
 		} else {
-			if (message.trim() === '') {
+			if (message === '') {
 				var errorMessage = {
-					'message' : errorMessages.EMPTY_MESSAGE_NOT_ALLOWED,
+					'message' : ErrorMessages.EMPTY_MESSAGE_NOT_ALLOWED,
 					'chatId' : chatId
 				};
-				eventBus.post(events.MESSAGE_ADDING_FAILED, errorMessage);
+				eventBus.post(Events.MESSAGE_ADDING_FAILED, errorMessage);
 			} else {
 				chat.addMessage(new MessageDTO(user, message, messageData.color));
-				eventBus.post(events.MESSAGE_ADDED, {'chatId' : chatId, 'messages': chat.getMessages()});				
+				eventBus.post(Events.MESSAGE_ADDED, {'chatId' : chatId, 'messages': chat.getMessages()});				
 			}
 		}
 	}

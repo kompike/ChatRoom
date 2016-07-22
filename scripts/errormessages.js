@@ -1,4 +1,4 @@
-var errorMessages = {
+var ErrorMessages = {
 	
 	USER_ALREADY_EXISTS : 'User already exists',
 	EMPTY_FIELDS_NOT_ALLOWED : 'All fields must be filled',
@@ -8,6 +8,8 @@ var errorMessages = {
 	
 	CHAT_ALREADY_EXISTS : 'Chat already exists',
 	CHATNAME_MUST_BE_FILLED : 'Chat name must be filled',
+	
+	CHAT_SUCCESSFULLY_CREATED : 'New chat successfully created',
 	
 	USER_ALREADY_JOINED : 'You already joined this chat',
 	USER_ALREADY_LEFT : 'You already left this chat',
@@ -21,5 +23,5 @@ if (typeof define !== 'function') {
 }
 
 define(function() {
-	return errorMessages;
+	return ErrorMessages;
 });

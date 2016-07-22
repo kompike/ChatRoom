@@ -1,4 +1,4 @@
-var events = {
+var Events = {
 	
 	NEW_USER_ADDITION : 'NEW_USER_ADDITION',
 	REGISTRATION_FAILED : 'REGISTRATION_FAILED', 
@@ -9,6 +9,7 @@ var events = {
 	NEW_CHAT_CREATION: 'NEW_CHAT_CREATING',
 	CHAT_CREATION_FAILED : 'CHAT_CREATION_FAILED',
 	CHAT_LIST_UPDATED: 'CHAT_LIST_UPDATED',
+	CHAT_CREATED: 'CHAT_CREATED',
 	JOINING_CHAT : 'JOIN_CHAT',
 	CHAT_JOINING_FAILED : 'USER_JOINING_FAILED',
 	USER_JOINED_CHAT: 'ON_USER_JOINED',
@@ -25,5 +26,5 @@ if (typeof define !== 'function') {
 }
 
 define(function() {
-	return events;
+	return Events;
 });

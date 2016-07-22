@@ -46,16 +46,12 @@ input[type="password"] {
 
 input[id$="_chatName"] {  
 	display:inline-block;
-  background: rgba(255,255,255,0.1);
-  border: none;
   font-size: 16px;
   height: auto;
 	margin: 25px auto;
   border-radius: 5px;
   padding: 10px;
   width: 45%;
-  background-color: #e8eeef;
-  color: #8a97a0;
   box-shadow: 0 1px 0 rgba(0,0,0,0.03) inset;
 }
 
@@ -100,6 +96,14 @@ label {
 div[id$="_box_err"] {
     text-align: center;
   color: #FF0000;
+  font-size: 14px;
+  width: 100%;
+  margin: 5px auto;
+}
+
+div[id$="_box_success"] {
+    text-align: center;
+  color: #0000FF;
   font-size: 14px;
   width: 100%;
   margin: 5px auto;
@@ -205,7 +209,6 @@ li:hover {
 	height: 50px !important;
 	border-radius: 5px;
 	border:1px solid #A9A9A9 !important;
-	color: #000;
 	font-weight: 400 !important;
 }
 
@@ -258,7 +261,8 @@ select {
     -moz-transform:rotate(90deg);
     -ms-transform:rotate(90deg);
     transform:rotate(90deg);
-    right:8px; top:2px;
+    right:8px; 
+	top:-10%;
     padding:0 0 2px;
     border-bottom:1px solid #ddd;
     position:absolute;
@@ -275,4 +279,12 @@ select {
     position:absolute;
     pointer-events: none;
     display: block;
+}
+pre {
+	font: 18px/1.5 Times New Roman, Verdana, sans-serif;
+	display: inline;
+    white-space: pre-wrap;
+	white-space: -moz-pre-wrap;
+	white-space: -o-pre-wrap;
+    word-wrap: break-word;
 }

@@ -1,7 +1,8 @@
 var UserService = require('../scripts/service/userservice');
 var StorageService = require('../scripts/service/storageservice');
+var ErrorMessages = require('../scripts/errorMessages');
 var EventBus = require('../scripts/eventbus');
-var events = require('../scripts/events');
+var Events = require('../scripts/events');
 
 var eventBus = new EventBus();
 
@@ -11,7 +12,7 @@ var test = require('unit.js');
 
 describe('User registration service should', function(){
 
-	it('Register new user', function(){
+	it('allow to create new user', function(){
 
 		var storage = new StorageService();
 		var userService = new UserService(eventBus, storage);
@@ -20,10 +21,10 @@ describe('User registration service should', function(){
 		var password = 'password';
 		var registered = false;
 		
-		var expectedNickname = nickname;
+		var expectedUserId = 'user_0';
 		
-		eventBus.subscribe(events.USER_REGISTERED, function(user) {
-			registered = (user.getName() === expectedNickname);
+		eventBus.subscribe(Events.USER_REGISTERED, function(userId) {
+			registered = (userId === expectedUserId);
 		});
 		
 		var user = {
@@ -51,23 +52,25 @@ describe('User registration service should', function(){
 				.hasLength(1);
 	});
 	
-	it('Avoid registering already existing user', function(){
+	it('prohibit registation of already existing user', function(){
 
 		var storage = new StorageService();
 		var userService = new UserService(eventBus, storage);
 
-		var expectedMessage = 'User already exists';
+		var expectedMessage = ErrorMessages.USER_ALREADY_EXISTS;
 		var delivered = false;
 
 		var nickname = 'User';
 		var password = 'password';
 		var registered = false;
+		
+		var expectedUserId = 'user_0';
 
-		eventBus.subscribe(events.USER_REGISTERED, function(user) {
-			registered = (user.getName() === nickname);
+		eventBus.subscribe(Events.USER_REGISTERED, function(userId) {
+			registered = (userId === expectedUserId);
 		});
 
-		eventBus.subscribe(events.REGISTRATION_FAILED, function(message) {
+		eventBus.subscribe(Events.REGISTRATION_FAILED, function(message) {
 			delivered = (expectedMessage === message);
 		});
 		
@@ -102,16 +105,16 @@ describe('User registration service should', function(){
 				.hasLength(1);
 	});
 
-	it('Avoid registering user with whitespaces in nickname', function(){
+	it('prohibit registration of user with whitespaces in nickname', function(){
 
 		var storage = new StorageService();
 		var userService = new UserService(eventBus, storage);
 		
-		var expectedMessage = 'Nickname can not contain whitespaces';
+		var expectedMessage = ErrorMessages.WHITESPACES_IN_NICKNAME_NOT_ALLOWED;
 		var nickname = 'User 1';
 		var delivered = false;
 		
-		eventBus.subscribe(events.REGISTRATION_FAILED, function(message) {
+		eventBus.subscribe(Events.REGISTRATION_FAILED, function(message) {
 			delivered = (expectedMessage === message);
 		});
 		
@@ -136,16 +139,16 @@ describe('User registration service should', function(){
 				.isEmpty();
 	});
 	
-	it('Check passwords equality', function(){
+	it('prohibit registration of user with different passwords', function(){
 		
 		var storage = new StorageService();
 		var userService = new UserService(eventBus, storage);
 		
-		var expectedMessage = 'Passwords must be equal';
+		var expectedMessage = ErrorMessages.PASSWORDS_NOT_EQUAL;
 		var nickname = 'User';
 		var delivered = false;
 		
-		eventBus.subscribe(events.REGISTRATION_FAILED, function(message) {
+		eventBus.subscribe(Events.REGISTRATION_FAILED, function(message) {
 			delivered = (expectedMessage === message);
 		});
 		
@@ -170,15 +173,15 @@ describe('User registration service should', function(){
 				.isEmpty();
 	});	
 
-	it('Check empty fields', function(){
+	it('prohibit registration of user with empty fields', function(){
 		
 		var storage = new StorageService();
 		var userService = new UserService(eventBus, storage);
 		
-		var expectedMessage = 'All fields must be filled';
+		var expectedMessage = ErrorMessages.EMPTY_FIELDS_NOT_ALLOWED;
 		var delivered = false;
 		
-		eventBus.subscribe(events.REGISTRATION_FAILED, function(message) {
+		eventBus.subscribe(Events.REGISTRATION_FAILED, function(message) {
 			delivered = (expectedMessage === message);
 		});
 		
@@ -203,24 +206,26 @@ describe('User registration service should', function(){
 				.isEmpty();
 	});	
 	
-	it('Trim nickname while registering new user', function(){
+	it('trim nickname while registering new user', function(){
 
 		var storage = new StorageService();
 		var userService = new UserService(eventBus, storage);
 
-		var expectedMessage = 'User already exists';
+		var expectedMessage = ErrorMessages.USER_ALREADY_EXISTS;
 		var delivered = false;
+		
+		var expectedUserId = 'user_0';
 
 		var nicknameWithWhitespaces = '    User   ';
 		var nickname = 'User';
 		var password = 'password';
 		var registered = false;
 
-		eventBus.subscribe(events.USER_REGISTERED, function(user) {
-			registered = (user.getName() === nickname);
+		eventBus.subscribe(Events.USER_REGISTERED, function(userId) {
+			registered = (userId === expectedUserId);
 		});
 
-		eventBus.subscribe(events.REGISTRATION_FAILED, function(message) {
+		eventBus.subscribe(Events.REGISTRATION_FAILED, function(message) {
 			delivered = (expectedMessage === message);
 		});
 		
@@ -278,13 +283,13 @@ describe('User login service should', function(){
 		
 	userService.onUserAdded(user);
 
-	it('Login registered user', function(){
+	it('allow to register new user', function(){
 		
 		var expectedName = nickname;
 		var delivered = false;
 		
-		eventBus.subscribe(events.LOGIN_SUCCESSFULL, function(user) {
-			delivered = (user.getName() === expectedName);
+		eventBus.subscribe(Events.LOGIN_SUCCESSFULL, function(userName) {
+			delivered = (userName === expectedName);
 		});
 		
 		userService.onUserLogin({
@@ -297,12 +302,12 @@ describe('User login service should', function(){
 				.isTrue();
 	});	
 
-	it('Avoid login not registered user', function(){
+	it('prohibit login of not registered user', function(){
 		
-		var expectedMessage = 'Incorrect login / password';
+		var expectedMessage = ErrorMessages.INCORRECT_CREDENTIALS;
 		var delivered = false;
 		
-		eventBus.subscribe(events.LOGIN_FAILED, function(message) {
+		eventBus.subscribe(Events.LOGIN_FAILED, function(message) {
 			delivered = (message === expectedMessage);
 		});
 		
@@ -316,12 +321,12 @@ describe('User login service should', function(){
 				.isTrue();
 	});
 	
-	it('Check password correctness', function(){
+	it('check password correctness', function(){
 		
-		var expectedMessage = 'Incorrect login / password';
+		var expectedMessage = ErrorMessages.INCORRECT_CREDENTIALS;
 		var delivered = false;
 		
-		eventBus.subscribe(events.LOGIN_FAILED, function(message) {
+		eventBus.subscribe(Events.LOGIN_FAILED, function(message) {
 			delivered = (message === expectedMessage);
 		});
 		

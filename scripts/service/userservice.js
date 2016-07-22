@@ -1,7 +1,7 @@
 if (typeof define !== 'function') {
     var UserDTO = require('../dto/userDTO');
-	var events = require('../events');
-	var errorMessages = require('../errormessages');
+	var Events = require('../events');
+	var ErrorMessages = require('../errorMessages');
 }
 
 var UserService = function(eventBus, storageService) {
@@ -17,22 +17,22 @@ var UserService = function(eventBus, storageService) {
 			storageService.createCollection(_userCollection);			
 		}		
 		if (_checkIfUserExists(nickname)) {
-			eventBus.post(events.REGISTRATION_FAILED, errorMessages.USER_ALREADY_EXISTS);			
+			eventBus.post(Events.REGISTRATION_FAILED, ErrorMessages.USER_ALREADY_EXISTS);			
 		} else if (nickname.indexOf(' ') > 0) {
-			eventBus.post(events.REGISTRATION_FAILED, errorMessages.WHITESPACES_IN_NICKNAME_NOT_ALLOWED);				
+			eventBus.post(Events.REGISTRATION_FAILED, ErrorMessages.WHITESPACES_IN_NICKNAME_NOT_ALLOWED);				
 		} else {			
 			var password = user.password;
 			var repeatPassword = user.repeatPassword;
 			
 			if (nickname === "" || password === "" || repeatPassword === "") {
-				eventBus.post(events.REGISTRATION_FAILED, errorMessages.EMPTY_FIELDS_NOT_ALLOWED);				
+				eventBus.post(Events.REGISTRATION_FAILED, ErrorMessages.EMPTY_FIELDS_NOT_ALLOWED);				
 			} else {
 				if (password !== repeatPassword) {
-					eventBus.post(events.REGISTRATION_FAILED, errorMessages.PASSWORDS_NOT_EQUAL);
+					eventBus.post(Events.REGISTRATION_FAILED, ErrorMessages.PASSWORDS_NOT_EQUAL);
 				} else {
 					var userDTO = new UserDTO(nickname, password);
 					newUserId = storageService.addItem(_userCollection, userDTO);			
-					eventBus.post(events.USER_REGISTERED, userDTO);
+					eventBus.post(Events.USER_REGISTERED, newUserId);
 				}				
 			}			
 		}
@@ -62,17 +62,16 @@ var UserService = function(eventBus, storageService) {
 		
 		var name = user.nickname;
 		if (!_checkIfUserExists(name)) {
-			eventBus.post(events.LOGIN_FAILED, errorMessages.INCORRECT_CREDENTIALS);			
+			eventBus.post(Events.LOGIN_FAILED, ErrorMessages.INCORRECT_CREDENTIALS);			
 		} else {			
-			var pass = user.password;
-			
+			var pass = user.password;			
 			var userFromStorage = _getUserByNickname(name);
 			var userPassword = userFromStorage.getPassword();
 			
 			if (pass !== userPassword) {
-				eventBus.post(events.LOGIN_FAILED, errorMessages.INCORRECT_CREDENTIALS);
+				eventBus.post(Events.LOGIN_FAILED, ErrorMessages.INCORRECT_CREDENTIALS);
 			} else {			
-				eventBus.post(events.LOGIN_SUCCESSFULL, userFromStorage);
+				eventBus.post(Events.LOGIN_SUCCESSFULL, name);
 			}
 		}		
 	}	
