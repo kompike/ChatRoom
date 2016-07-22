@@ -101,6 +101,40 @@ describe('User registration service should', function(){
 				.isNotEmpty()
 				.hasLength(1);
 	});
+
+	it('Avoid registering user with whitespaces in nickname', function(){
+
+		var storage = new StorageService();
+		var userService = new UserService(eventBus, storage);
+		
+		var expectedMessage = 'Nickname can not contain whitespaces';
+		var nickname = 'User 1';
+		var delivered = false;
+		
+		eventBus.subscribe(events.REGISTRATION_FAILED, function(message) {
+			delivered = (expectedMessage === message);
+		});
+		
+		var user = {
+			'nickname': nickname, 
+			'password': 'password', 
+			'repeatPassword': 'password'
+		};
+			
+		userService.onUserAdded(user);
+		
+		var userFromStorage = userService.getUserByNickname(nickname);
+		
+		var userList = userService.getUsers();
+		
+		test
+			.bool(delivered)
+				.isTrue()
+			.value(userFromStorage)
+				.isNull()
+			.array(userList)
+				.isEmpty();
+	});
 	
 	it('Check passwords equality', function(){
 		

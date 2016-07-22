@@ -18,6 +18,8 @@ var UserService = function(eventBus, storageService) {
 		}		
 		if (_checkIfUserExists(nickname)) {
 			eventBus.post(events.REGISTRATION_FAILED, errorMessages.USER_ALREADY_EXISTS);			
+		} else if (nickname.indexOf(' ') > 0) {
+			eventBus.post(events.REGISTRATION_FAILED, errorMessages.WHITESPACES_IN_NICKNAME_NOT_ALLOWED);				
 		} else {			
 			var password = user.password;
 			var repeatPassword = user.repeatPassword;

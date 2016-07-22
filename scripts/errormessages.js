@@ -4,6 +4,7 @@ var errorMessages = {
 	EMPTY_FIELDS_NOT_ALLOWED : 'All fields must be filled',
 	PASSWORDS_NOT_EQUAL : 'Passwords must be equal',
 	INCORRECT_CREDENTIALS : 'Incorrect login / password',
+	WHITESPACES_IN_NICKNAME_NOT_ALLOWED : 'Nickname can not contain whitespaces',
 	
 	CHAT_ALREADY_EXISTS : 'Chat already exists',
 	CHATNAME_MUST_BE_FILLED : 'Chat name must be filled',
