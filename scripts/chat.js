@@ -158,7 +158,7 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 				.append($('<button/>').attr({'id': _rootDivId + '_add_chat', 'class' : 'add_chat'}).text('Add new chat').click(function(){
 					var chatName = $('#' + _rootDivId + '_chatName').val();
 					var chat = {
-						'name' : chatName, 
+						'chatName' : chatName, 
 						'owner' : currentUser
 					};
 					eventBus.post(events.NEW_CHAT_CREATION, chat);
@@ -218,7 +218,7 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 			
 			var _init = function(chatInfo) {
 				
-				var chatDivId = chatInfo.id;
+				var chatDivId = chatInfo.chatId;
 					
 				eventBus.subscribe(events.MESSAGE_ADDING_FAILED, _onMessageAddingFailed);
 				eventBus.subscribe(events.MESSAGE_ADDED, _onMessageListUpdated);
@@ -260,17 +260,18 @@ var Chat = function(chatDivId, eventBus, userService, chatService) {
 			}
 		
 			var _onMessageListUpdated = function(chatInfo) {
-				$('#' + chatInfo.id + '_body').html('');
+				var chatId = chatInfo.chatId;
+				$('#' + chatId + '_body').html('');
 				var list = chatInfo.messages;
 				if (typeof list !== 'undefined') {
 					for (var i = 0; i < list.length; i++) {
 						var message = list[i];
-						$('#' + chatInfo.id + '_body')
+						$('#' + chatId + '_body')
 							.append($('<p>' + message.getAuthor() + ' : ' + message.getMessage() + '</p>').css({'color' : message.getColor()}));
 					}
 					
-					$('#' + chatInfo.id + '_input').val('');
-					$('#' + chatInfo.id + '_message_err').html('');
+					$('#' + chatId + '_input').val('');
+					$('#' + chatId + '_message_err').html('');
 				}				
 			}
 			

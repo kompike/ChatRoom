@@ -10,7 +10,7 @@ var test = require('unit.js');
 
 /* TESTS */
 
-describe('Chat service shold', function(){
+describe('Chat service should', function(){
 	
 	it('Create new chat', function(){	
 
@@ -26,7 +26,7 @@ describe('Chat service shold', function(){
 		});
 		
 		var chat = {
-			'name' : chatName,
+			'chatName' : chatName,
 			'owner' : owner
 		};
 		
@@ -69,7 +69,7 @@ describe('Chat service shold', function(){
 		});
 		
 		var chat = {
-			'name' : chatName,
+			'chatName' : chatName,
 			'owner' : 'User'
 		};
 		
@@ -119,7 +119,7 @@ describe('Chat service shold', function(){
 		});
 		
 		var chat = {
-			'name' : chatName,
+			'chatName' : chatName,
 			'owner' : owner
 		};
 		
@@ -137,7 +137,7 @@ describe('Chat service shold', function(){
 				.hasLength(1);
 		
 		var newChat = {
-			'name' : chatNameWithWhitespaces,
+			'chatName' : chatNameWithWhitespaces,
 			'owner' : owner
 		};
 				
@@ -166,7 +166,7 @@ describe('Chat service shold', function(){
 		});
 		
 		var chat = {
-			'name' : '',
+			'chatName' : '',
 			'owner' : 'User'
 		};
 		
@@ -192,7 +192,7 @@ describe('Chat service shold', function(){
 		var nickname = 'User';
 			
 		var chat = {
-			'name' : chatName,
+			'chatName' : chatName,
 			'owner' : nickname
 		};
 		
@@ -204,7 +204,7 @@ describe('Chat service shold', function(){
 		var userJoined = false;
 		
 		eventBus.subscribe(events.USER_JOINED_CHAT, function(chatData) {
-			userJoined = (chatName === chatData.chatName && chatId === chatData.id);
+			userJoined = (chatName === chatData.chatName && chatId === chatData.chatId);
 		});
 		
 		chatService.onUserJoined({'chatName' : chatName, 'user' : user});
@@ -227,7 +227,7 @@ describe('Chat service shold', function(){
 		var nickname = 'User';
 			
 		var chat = {
-			'name' : chatName,
+			'chatName' : chatName,
 			'owner' : nickname
 		};
 		
@@ -242,7 +242,7 @@ describe('Chat service shold', function(){
 		var userJoined = false;
 		
 		eventBus.subscribe(events.USER_JOINED_CHAT, function(chatData) {
-			userJoined = (chatName === chatData.chatName && chatId === chatData.id);
+			userJoined = (chatName === chatData.chatName && chatId === chatData.chatId);
 		});
 		
 		eventBus.subscribe(events.CHAT_JOINING_FAILED, function(message) {
@@ -280,7 +280,7 @@ describe('Chat service shold', function(){
 		var nickname = 'User';
 			
 		var chat = {
-			'name' : chatName,
+			'chatName' : chatName,
 			'owner' : nickname
 		};
 		
@@ -323,7 +323,7 @@ describe('Chat service shold', function(){
 		var nickname = 'User';
 			
 		var chat = {
-			'name' : chatName,
+			'chatName' : chatName,
 			'owner' : nickname
 		};
 		
@@ -375,7 +375,7 @@ describe('Chat service shold', function(){
 		var nickname = 'User';
 			
 		var chat = {
-			'name' : chatName,
+			'chatName' : chatName,
 			'owner' : nickname
 		};
 		
@@ -383,10 +383,10 @@ describe('Chat service shold', function(){
 		var createdChat = chatService.getChatByName(chatName);
 		
 		var messageCreated = false;
-		var expectedMessageData = {'id' : chatId, 'messages': createdChat.getMessages()}
+		var expectedMessageData = {'chatId' : chatId, 'messages': createdChat.getMessages()}
 		
 		eventBus.subscribe(events.MESSAGE_ADDED, function(messageData) {
-			messageCreated = (messageData.id === expectedMessageData.id);
+			messageCreated = (messageData.chatId === expectedMessageData.chatId);
 		});
 		
 		var messageInfo = {
@@ -413,7 +413,7 @@ describe('Chat service shold', function(){
 		var nickname = 'User';
 			
 		var chat = {
-			'name' : chatName,
+			'chatName' : chatName,
 			'owner' : nickname
 		};
 		

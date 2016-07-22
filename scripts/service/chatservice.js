@@ -13,7 +13,7 @@ var ChatService = function(eventBus, storageService) {
 		
 		var newChatId = null;
 		var chatList = _getAllChats();
-		var chatName = chat.name.trim();
+		var chatName = chat.chatName.trim();
 		if (typeof chatList === 'undefined') {
 			storageService.createCollection(_chatCollection);			
 		}
@@ -43,7 +43,7 @@ var ChatService = function(eventBus, storageService) {
 			eventBus.post(events.CHAT_JOINING_FAILED, errorMessages.USER_ALREADY_JOINED);
 		} else {
 			chat.addUser(user);
-			eventBus.post(events.USER_JOINED_CHAT, {'id':chat.getId(), 'chatName':chat.getName(), 'messages' : chat.getMessages()});					
+			eventBus.post(events.USER_JOINED_CHAT, {'chatId':chat.getId(), 'chatName':chat.getName(), 'messages' : chat.getMessages()});					
 		}
 	}
 		
@@ -70,7 +70,7 @@ var ChatService = function(eventBus, storageService) {
 		} else {
 			var chat = _getChatById(messageData.chatId);
 			chat.addMessage(new MessageDTO(messageData.user, message, messageData.color));
-			eventBus.post(events.MESSAGE_ADDED, {'id' : messageData.chatId, 'messages': chat.getMessages()});
+			eventBus.post(events.MESSAGE_ADDED, {'chatId' : messageData.chatId, 'messages': chat.getMessages()});
 		}
 	}
 	
