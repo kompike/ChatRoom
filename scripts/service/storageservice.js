@@ -34,7 +34,7 @@ var StorageService = function() {
 				return itemByName;
 			}
 		}
-		return null;
+		return itemByName;
 	}
 	
 	var _findItemById = function(collectionName, itemId) {
