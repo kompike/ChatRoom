@@ -1,5 +1,7 @@
 var StorageService = require('../scripts/service/storageservice');
 
+/* Item object for testing */
+
 var Item = function(name) {
 	
 	var _setId = function(id) {
